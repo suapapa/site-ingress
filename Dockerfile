@@ -14,7 +14,7 @@ RUN go build -o app
 # RUN upx -q -9 /build/app
 
 # ---
-FROM scratch
+FROM alpine:latest
 
 COPY --from=builder /build/cert /bin/cert
 COPY --from=builder /build/app /bin/app

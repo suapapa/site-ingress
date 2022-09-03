@@ -25,7 +25,7 @@ spec:
           effect: NoSchedule
       containers:
         - name: ingress-proxy
-          image: 'nginx'
+          image: 'gcr.io/homin-dev/ingress:latest'
           ports:
             - name: http
               containerPort: 80
@@ -33,11 +33,12 @@ spec:
             - name: https
               containerPort: 443
               hostPort: 443
-          # volumeMounts:
-          #   - name: web-certs
-          #     mountPath: /cert
-          #     readOnly: true
-      # volumes:
-      #   - name: web-certs
-      #     secret:
-      #       secretName: web-certs
+          volumeMounts:
+            - name: tmp-letsencrypt
+              mountPath: /tmp/letsencrypt
+              readOnly: true
+      volumes:
+        - name: tmp-letsencrypt
+          hostPath:
+            path: /tmp/letsencrypt
+            type: DirectoryOrCreate
