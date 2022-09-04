@@ -40,12 +40,18 @@ func notfoundHandler(w http.ResponseWriter, r *http.Request) {
 
 func imgHandler(w http.ResponseWriter, r *http.Request) {
 	basePath := path.Base(r.URL.Path)
-	log.Println("basePath: ", basePath)
+	// log.Println("basePath: ", basePath)
 
 	imgs := map[string][]byte{
 		"iamfine": iamfineImg,
 	}
 
+	data, ok := imgs[basePath]
+	if !ok {
+		http.Redirect(w, r, "/404", http.StatusMovedPermanently)
+		return
+	}
+
 	w.Header().Set("Content-Type", "image/jpg")
-	w.Write(imgs[basePath])
+	w.Write(data)
 }

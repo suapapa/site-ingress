@@ -26,7 +26,8 @@ func main() {
 	flag.Parse()
 
 	http.HandleFunc("/", notfoundHandler)
-	http.HandleFunc("/img", imgHandler)
+	http.HandleFunc("/img/", imgHandler)
+	http.HandleFunc("/404", notfoundHandler)
 	http.Handle("/.well-known/acme-challenge/", NewAcmeChallenge("/tmp/letsencrypt/"))
 
 	// start HTTPServer
