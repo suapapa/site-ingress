@@ -26,7 +26,7 @@ func main() {
 	flag.Parse()
 
 	http.HandleFunc("/", notfoundHandler)
-	http.HandleFunc("/img/iamfine", imgIamfineHandler)
+	http.HandleFunc("/img", imgHandler)
 	http.Handle("/.well-known/acme-challenge/", NewAcmeChallenge("/tmp/letsencrypt/"))
 
 	// start HTTPServer
@@ -44,6 +44,7 @@ func main() {
 }
 
 func startHTTPSServer() {
+	// TODO: compare checksum of last cert
 	if filesExist(SSL_CERT_FILE, SSL_KEY_FILE) {
 		go func() {
 			log.Printf("listening https on :%d", httpsPort)

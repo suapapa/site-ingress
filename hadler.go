@@ -4,6 +4,7 @@ import (
 	_ "embed"
 	"log"
 	"net/http"
+	"path"
 	"text/template"
 )
 
@@ -12,7 +13,7 @@ var (
 )
 
 var (
-	//go:embed asset/iamfine.png
+	//go:embed asset/iamfine.jpg
 	iamfineImg []byte
 
 	//go:embed asset/notfound.tmpl
@@ -37,7 +38,14 @@ func notfoundHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func imgIamfineHandler(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "image/png")
-	w.Write(iamfineImg)
+func imgHandler(w http.ResponseWriter, r *http.Request) {
+	basePath := path.Base(r.URL.Path)
+	log.Println("basePath: ", basePath)
+
+	imgs := map[string][]byte{
+		"iamfine": iamfineImg,
+	}
+
+	w.Header().Set("Content-Type", "image/jpg")
+	w.Write(imgs[basePath])
 }
