@@ -16,7 +16,9 @@ RUN go build -o app
 # ---
 FROM alpine:latest
 
-COPY --from=builder /build/cert /bin/cert
+RUN apk add certbot
+
+# COPY --from=builder /build/cert /bin/cert
 COPY --from=builder /build/app /bin/app
 
 EXPOSE 443
