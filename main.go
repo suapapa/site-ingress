@@ -25,7 +25,7 @@ func main() {
 	flag.IntVar(&httpsPort, "https", 443, "set https port")
 	flag.Parse()
 
-	http.HandleFunc("/", notfoundHandler)
+	http.HandleFunc("/", redirectHadler)
 	http.HandleFunc("/img/", imgHandler)
 	http.HandleFunc("/404", notfoundHandler)
 	http.Handle("/.well-known/acme-challenge/", NewAcmeChallenge("/tmp/letsencrypt/"))

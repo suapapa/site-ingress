@@ -7,8 +7,13 @@
   display: flex;
   justify-content: center;
 }
-.msg {
+h1, p  {
   text-align: center;
+}
+ul {
+  display: table;
+  margin-left: auto;
+  margin-right: auto;
 }
 </style>
 
@@ -16,8 +21,22 @@
 </head>
 
 <body>
+<h1>🚧 Homin.dev 🚧</h1>
 <p class="logo"><img src="{{.Logo}}"></p>
-<p class="msg"><a href="{{.SupportLink}}">대가없는 🥩 환영합니다.</a></p>
+<p class="msg">대가없는 🥩 환영합니다</p>
+<ul>
+    <li><a href="/img/kakaopay">KakaoPay</a></li>
+    <li><a href="{{.SupportLink}}">Paypal</a></li>
+</ul>
+
+
+<p class=msg>browse here:</p>
+<ul>
+    <li><a href="/github">Github</a></li>
+    <li><a href="/youtube">Youtube</a></li>
+    <li><a href="/instagram">Instagram</a></li>
+    <li><a href="/resume">Resume</a></li>
+</ul>
 </body>
 
 </html>
