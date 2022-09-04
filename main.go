@@ -9,8 +9,8 @@ import (
 )
 
 const (
-	SSL_CERT_FILE = "cert/homin-dev.crt"
-	SSL_KEY_FILE  = "cert/homin-dev.key"
+	SSL_CERT_FILE = "/etc/letsencrypt/live/homin.dev/fullchain.pem"
+	SSL_KEY_FILE  = "/etc/letsencrypt/live/homin.dev/privkey.pem"
 )
 
 var (
@@ -18,34 +18,40 @@ var (
 )
 
 func main() {
+	log.Println("homin.dev ingress start")
+	defer log.Println("homin.dev ingress stop")
+
 	flag.IntVar(&httpPort, "http", 80, "set http port")
 	flag.IntVar(&httpsPort, "https", 443, "set https port")
 	flag.Parse()
 
 	http.HandleFunc("/", notfoundHandler)
 	http.HandleFunc("/img/iamfine", imgIamfineHandler)
-	http.Handle("/.well-known/acme-challenge/",
-		http.FileServer(http.FileSystem(http.Dir("/tmp/letsencrypt/"))),
-	)
+	http.Handle("/.well-known/acme-challenge/", NewAcmeChallenge("/tmp/letsencrypt/"))
 
+	// start HTTPServer
 	go func() {
-		log.Printf("starting http on :%d", httpPort)
+		log.Printf("listening http on :%d", httpPort)
 		if err := http.ListenAndServe(fmt.Sprintf(":%d", httpPort), nil); err != nil {
 			log.Fatal(err)
 		}
 	}()
 
+	startHTTPSServer()
+
+	exitCh := make(chan any)
+	<-exitCh
+}
+
+func startHTTPSServer() {
 	if filesExist(SSL_CERT_FILE, SSL_KEY_FILE) {
 		go func() {
-			log.Printf("starting http on :%d", httpsPort)
+			log.Printf("listening https on :%d", httpsPort)
 			if err := http.ListenAndServeTLS(fmt.Sprintf(":%d", httpsPort), SSL_CERT_FILE, SSL_KEY_FILE, nil); err != nil {
 				log.Fatal(err)
 			}
 		}()
 	}
-
-	exitCh := make(chan any)
-	<-exitCh
 }
 
 func filesExist(paths ...string) bool {
