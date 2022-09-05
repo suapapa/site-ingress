@@ -26,6 +26,7 @@ spec:
       containers:
         - name: ingress-proxy
           image: 'gcr.io/homin-dev/ingress:latest'
+          args: ["-c", "/conf/links.yaml"]
           ports:
             - name: http
               containerPort: 80
@@ -34,9 +35,14 @@ spec:
               containerPort: 443
               hostPort: 443
           volumeMounts:
+            - name: ingress-links
+              mountPath: /conf  
             - name: cert-letsencrypt
               mountPath: /etc/letsencrypt
       volumes:
+        - name: ingress-links
+          configMap:
+            name: links
         - name: cert-letsencrypt
           hostPath:
             path: /etc/letsencrypt

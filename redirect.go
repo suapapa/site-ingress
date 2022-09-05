@@ -6,33 +6,25 @@ import (
 	"path"
 )
 
-var (
-	redirects = map[string]string{
-		// work-pool test. FQDN: <service>.<namespace>.svc.cluster.local
-		"website":   "http://website.default.svc.cluster.local:8080",
-		"resume":    "https://suapapa.github.io/resume/",
-		"blog":      "http://suapapa.github.io/blog/",
-		"github":    "https://github.com/suapapa",
-		"youtube":   "https://www.youtube.com/c/HominLee",
-		"instagram": "https://www.instagram.com/homin1227/",
-	}
-)
-
 func redirectHadler(w http.ResponseWriter, r *http.Request) {
 	basePath := path.Base(r.URL.Path)
-	log.Printf("hit basePath")
+	log.Printf("hit basePath, %s", basePath)
+	err := updateLinks()
+	if err != nil {
+		log.Printf("ERR: %v", err)
+		return
+	}
 
-	site, ok := redirects[basePath]
+	link, ok := redirects[basePath]
 	if !ok {
 		http.Redirect(w, r, "/404", http.StatusMovedPermanently)
 		return
 	}
 
-	if basePath == "website" {
-		log.Printf("reverse-proxy: %s", site)
-		serveReverseProxy(site, w, r)
+	if link.ReverseProxy {
+		serveReverseProxy(link.Link, w, r)
 		return
 	}
 
-	http.Redirect(w, r, site, http.StatusMovedPermanently)
+	http.Redirect(w, r, link.Link, http.StatusMovedPermanently)
 }

@@ -15,6 +15,7 @@ const (
 
 var (
 	httpPort, httpsPort int
+	linksConf           string
 )
 
 func main() {
@@ -23,12 +24,14 @@ func main() {
 
 	flag.IntVar(&httpPort, "http", 80, "set http port")
 	flag.IntVar(&httpsPort, "https", 443, "set https port")
+	flag.StringVar(&linksConf, "c", "conf/links.yaml", "links")
 	flag.Parse()
 
 	http.HandleFunc("/", redirectHadler)
-	http.HandleFunc("/img/", imgHandler)
+	http.HandleFunc("/ingress", ingressHandler)
 	http.HandleFunc("/404", notfoundHandler)
 	http.HandleFunc("/support", supportHandler)
+	http.HandleFunc("/img/", imgHandler)
 	http.Handle("/.well-known/acme-challenge/", NewAcmeChallenge("/tmp/letsencrypt/"))
 
 	// start HTTPServer

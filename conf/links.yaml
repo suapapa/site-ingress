@@ -1,0 +1,19 @@
+- name: resume
+  link: https://suapapa.github.io/resume/
+  desc: online resume
+
+- name: github
+  link: https://github.com/suapapa
+  desc: "only for hobby projects"
+
+- name: instagram
+  link: https://www.instagram.com/homin1227/
+  desc: life photos
+
+- name: youtube
+  link: https://www.youtube.com/c/HominLee
+  desc: hobby videos
+
+- name: reverse_proxy_test
+  link: http://website.default.svc.cluster.local:8080
+  reverse_proxy: true

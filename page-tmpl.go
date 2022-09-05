@@ -23,10 +23,6 @@ type PageContent struct {
 	Title     string
 	Img       string
 	Msg       string
-	Links     []*PageLink
+	Links     []*Link
 	LastWords string
-}
-
-type PageLink struct {
-	Title, Link, Desc string
 }
