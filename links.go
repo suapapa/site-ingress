@@ -14,6 +14,7 @@ type Link struct {
 	Link         string `yaml:"link"`
 	Desc         string `yaml:"desc,omitempty"`
 	ReverseProxy bool   `yaml:"reverse_proxy,omitempty"`
+	Hide         bool   `yaml:"hide,omitempty"`
 }
 
 var (

@@ -27,7 +27,7 @@ ul {
 <p class="msg">{{.Msg}}</p>
 <ul>
 {{range .Links}}
-  <li><a href="{{.Link}}">{{.Name}}</a> : {{.Desc}}</li>
+  {{if not .Hide}}<li><a href="{{.Link}}">{{.Name}}</a> : {{.Desc}}</li>{{end}}
 {{end}}
 </ul>
 

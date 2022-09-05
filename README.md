@@ -7,7 +7,8 @@ Live > [HERE](https://homin.dev) <
 Links (where to go from this site):
 
 ```bash
-kubectl create cm links --from-file=conf/links.yaml
+kubectl create cm links --from-file=conf/links.yaml # create
+kubectl edit cm links -o yaml # edit
 ```
 
 ## CICD

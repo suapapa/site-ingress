@@ -4,7 +4,7 @@
 
 - name: github
   link: https://github.com/suapapa
-  desc: "only for hobby projects"
+  desc: open-source projects
 
 - name: instagram
   link: https://www.instagram.com/homin1227/
@@ -17,3 +17,4 @@
 - name: reverse_proxy_test
   link: http://website.default.svc.cluster.local:8080
   reverse_proxy: true
+  hide: true
