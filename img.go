@@ -12,6 +12,9 @@ var (
 
 	//go:embed asset/kakaopay.jpg
 	kakaopayImg []byte
+
+	//go:embed asset/favicon.ico
+	favicon []byte
 )
 
 func imgHandler(w http.ResponseWriter, r *http.Request) {

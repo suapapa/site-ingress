@@ -19,7 +19,7 @@ var (
 )
 
 func main() {
-	log.Println("homin.dev ingress start2")
+	log.Println("homin.dev ingress start")
 	defer log.Println("homin.dev ingress stop")
 
 	flag.IntVar(&httpPort, "http", 80, "set http port")
@@ -27,10 +27,11 @@ func main() {
 	flag.StringVar(&linksConf, "c", "conf/links.yaml", "links")
 	flag.Parse()
 
-	http.HandleFunc("/", redirectHadler)
 	http.HandleFunc("/ingress", ingressHandler)
 	http.HandleFunc("/404", notfoundHandler)
 	http.HandleFunc("/support", supportHandler)
+
+	http.HandleFunc("/", redirectHadler)
 	http.HandleFunc("/img/", imgHandler)
 	http.Handle("/.well-known/acme-challenge/", NewAcmeChallenge("/tmp/letsencrypt/"))
 
