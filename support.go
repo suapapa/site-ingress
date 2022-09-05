@@ -7,15 +7,15 @@ import (
 	"text/template"
 )
 
-func notfoundHandler(w http.ResponseWriter, r *http.Request) {
-	tmpl, err := template.ParseFiles("tmpl/nothound.tmpl")
+func supportHandler(w http.ResponseWriter, r *http.Request) {
+	var err error
+	tmpl, err := template.ParseFiles("tmpl/support.tmpl")
 	if err != nil {
 		log.Fatal(err)
 	}
 
 	err = tmpl.Execute(w, struct{ Logo, SupportLink string }{
-		Logo:        "/img/iamfine",
-		SupportLink: "https://www.paypal.com/paypalme/suapapa",
+		Logo: "/img/iamfine",
 	})
 	if err != nil {
 		log.Printf("ERR: %v", err)

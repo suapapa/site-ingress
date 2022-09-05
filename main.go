@@ -18,7 +18,7 @@ var (
 )
 
 func main() {
-	log.Println("homin.dev ingress start")
+	log.Println("homin.dev ingress start2")
 	defer log.Println("homin.dev ingress stop")
 
 	flag.IntVar(&httpPort, "http", 80, "set http port")
@@ -28,6 +28,7 @@ func main() {
 	http.HandleFunc("/", redirectHadler)
 	http.HandleFunc("/img/", imgHandler)
 	http.HandleFunc("/404", notfoundHandler)
+	http.HandleFunc("/support", supportHandler)
 	http.Handle("/.well-known/acme-challenge/", NewAcmeChallenge("/tmp/letsencrypt/"))
 
 	// start HTTPServer

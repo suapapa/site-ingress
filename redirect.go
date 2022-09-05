@@ -1,6 +1,7 @@
 package main
 
 import (
+	"log"
 	"net/http"
 	"path"
 )
@@ -19,10 +20,17 @@ var (
 
 func redirectHadler(w http.ResponseWriter, r *http.Request) {
 	basePath := path.Base(r.URL.Path)
+	log.Printf("hit basePath")
 
 	site, ok := redirects[basePath]
 	if !ok {
 		http.Redirect(w, r, "/404", http.StatusMovedPermanently)
+		return
+	}
+
+	if basePath == "website" {
+		log.Printf("reverse-proxy: %s", site)
+		serveReverseProxy(site, w, r)
 		return
 	}
 
