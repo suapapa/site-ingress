@@ -34,15 +34,9 @@ spec:
               containerPort: 443
               hostPort: 443
           volumeMounts:
-            # - name: tmp-letsencrypt
-            #   mountPath: /tmp/letsencrypt
             - name: cert-letsencrypt
               mountPath: /etc/letsencrypt
       volumes:
-        # - name: tmp-letsencrypt
-        #   hostPath:
-        #     path: /tmp/letsencrypt
-        #     type: DirectoryOrCreate
         - name: cert-letsencrypt
           hostPath:
             path: /etc/letsencrypt
