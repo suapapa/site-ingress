@@ -17,15 +17,21 @@ ul {
 }
 </style>
 
-<title>🚧 후원 🚧</title>
+<title>Homin.dev - {{.Title}}</title>
 </head>
 
 <body>
-<h1>🚧 Homin.dev 🚧</h1>
-<ul class support list>
-    <li><a href="/img/kakaopay">KakaoPay</a></li>
-    <li><a href="https://www.paypal.com/paypalme/suapapa">Paypal</a></li>
+<h1 class="title">{{.Title}}</h1>
+<p class="img"><img src="{{.Img}}"></p>
+
+<p class="msg">{{.Msg}}</p>
+<ul>
+{{range .Links}}
+  <li><a href="{{.Link}}">{{.Title}}</a> : {{.Desc}}</li>
+{{end}}
 </ul>
+
+<p class="lastwords">{{.LastWords}}</p>
 
 <footer>
   <small>&copy; Homin Lee &lt;ff4500@gmail.com&gt;; All rights reserved.</small>
