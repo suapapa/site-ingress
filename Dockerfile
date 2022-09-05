@@ -16,7 +16,7 @@ RUN upx -q -9 /build/app
 # ---
 FROM alpine:latest
 
-RUN apk add certbot
+RUN apk add --no-cache certbot
 
 COPY --from=builder /build/app /bin/app
 
