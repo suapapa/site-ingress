@@ -12,10 +12,15 @@ func notfoundHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	c := &PageContent{
-		Title:     "🚧 404 🚧",
-		Img:       "https://homin.dev/img/iamfine",
-		Msg:       "공사가 마무리되기 전에, 다른 곳들을 둘러보세요",
-		Links:     links,
+		Title: "🚧 404 🚧",
+		Img:   "https://homin.dev/img/iamfine",
+		Msg:   "이 산이 아닌갑다",
+		Links: []*Link{
+			{
+				Name: "대문으로 돌아가기",
+				Link: "/ingress",
+			},
+		},
 		LastWords: "<a href=\"/support\">대가없는 🥩 환영합니다</a>",
 	}
 

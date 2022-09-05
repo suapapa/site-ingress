@@ -1,20 +1,20 @@
 - name: resume
   link: https://suapapa.github.io/resume/
-  desc: online resume
+  desc: 온라인 이력서
 
 - name: github
   link: https://github.com/suapapa
-  desc: open-source projects
+  desc: 오픈소스 프로젝트
 
 - name: instagram
   link: https://www.instagram.com/homin1227/
-  desc: life photos
+  desc: 일상 사진
 
 - name: youtube
   link: https://www.youtube.com/c/HominLee
-  desc: hobby videos
+  desc: 취미 동영상
 
-- name: reverse_proxy_test
+- name: website
   link: http://website.default.svc.cluster.local:8080
   reverse_proxy: true
   hide: true

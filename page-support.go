@@ -8,7 +8,7 @@ import (
 
 func supportHandler(w http.ResponseWriter, r *http.Request) {
 	c := &PageContent{
-		Title: "🥩 후원 🥩",
+		Title: "💸 후원 💸",
 		Img:   "/img/iamfine",
 		Msg:   "사이트 유지 비용을 후원해 주세요",
 		Links: []*Link{
