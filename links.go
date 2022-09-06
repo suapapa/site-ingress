@@ -14,6 +14,9 @@ type Link struct {
 	Link         string `yaml:"link"`
 	Desc         string `yaml:"desc,omitempty"`
 	ReverseProxy bool   `yaml:"reverse_proxy,omitempty"`
+	PortFoward   bool   `yaml:"port_foward,omitempty"`
+	InPort       int    `yaml:"in_port,omitempty"`
+	OutPort      int    `yaml:"out_port,omitempty"`
 	Hide         bool   `yaml:"hide,omitempty"`
 }
 

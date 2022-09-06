@@ -1,6 +1,7 @@
 package main
 
 import (
+	"log"
 	"net/http"
 	"net/http/httputil"
 	"net/url"
@@ -8,8 +9,13 @@ import (
 
 // Serve a reverse proxy for a given url
 func serveReverseProxy(target string, res http.ResponseWriter, req *http.Request) {
+	log.Printf("serverRP: %s", target)
 	// parse the url
-	url, _ := url.Parse(target)
+	url, err := url.Parse(target)
+	if err != nil {
+		log.Printf("ERR!: %v", err)
+	}
+	log.Println("rP url:", url)
 
 	// create the reverse proxy
 	proxy := httputil.NewSingleHostReverseProxy(url)

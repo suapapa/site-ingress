@@ -44,6 +44,7 @@ func main() {
 	}()
 
 	go startHTTPSServer()
+	go startPortFoward()
 
 	exitCh := make(chan any)
 	<-exitCh

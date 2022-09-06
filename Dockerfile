@@ -28,6 +28,7 @@ RUN SLEEPTIME=$(awk 'BEGIN{srand(); print int(rand()*(3600+1))}'); \
 
 COPY --from=builder /build/app /bin/app
 
+EXPOSE 9001
 EXPOSE 443
 EXPOSE 80
 

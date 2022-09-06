@@ -1,33 +1,37 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"net/http"
-	"path"
+	"strings"
 )
 
 func redirectHadler(w http.ResponseWriter, r *http.Request) {
-	basePath := path.Base(r.URL.Path)
+	urlPath := r.URL.Path //"/blog/favicon.ico"
 	err := updateLinks()
 	if err != nil {
 		log.Printf("ERR: %v", err)
 		return
 	}
 
-	log.Printf("hit basePath, %s", basePath)
-	if basePath == "/" {
+	log.Printf("hit basePath, %s", urlPath)
+	if urlPath == "/" {
 		http.Redirect(w, r, "/ingress", http.StatusMovedPermanently)
 		return
 	}
 
-	if basePath == "favicon.ico" {
+	if urlPath == "/favicon.ico" {
 		w.Header().Set("Content-Type", "image/x-icon")
 		w.Write(favicon)
 		return
 	}
 
+	subDomain, subPath := genFakeSubdomain(urlPath)
+	log.Printf("rp: %s, sd: %s, sp: %s", urlPath, subDomain, subPath)
+
 	// redirect for external sites
-	link, ok := redirects[basePath]
+	link, ok := redirects[subDomain]
 	if !ok {
 		http.Redirect(w, r, "/404", http.StatusMovedPermanently)
 		return
@@ -35,9 +39,28 @@ func redirectHadler(w http.ResponseWriter, r *http.Request) {
 
 	// reverse proxy for apps from same k8s cluster
 	if link.ReverseProxy {
-		serveReverseProxy(link.Link, w, r)
+		// TODO: cache proxy handlers
+		serveReverseProxy(
+			fmt.Sprintf(link.Link, subDomain)+subPath,
+			w, r,
+		)
 		return
 	}
 
 	http.Redirect(w, r, link.Link, http.StatusMovedPermanently)
+}
+
+func genFakeSubdomain(urlPath string) (string, string) {
+	urlPath = strings.Trim(urlPath, "/")
+	paths := strings.Split(urlPath, "/")
+
+	var subDomain, subPath string
+	subDomain = paths[0]
+	if len(paths[1:]) == 0 {
+		subPath = ""
+	} else {
+		subPath = "/" + strings.Join(paths[1:], "/")
+	}
+
+	return subDomain, subPath
 }
