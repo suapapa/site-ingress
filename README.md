@@ -25,8 +25,10 @@ docker push $IMAGE_TAG
 
 Deployment:
 
+> k8s configs are move to [suapapa/k8s-homin.dev](https://github.com/suapapa/k8s-homin.dev)
+
 ```bash
-kubectl apply -f k8s/deploy-ingress_proxy.yaml
+kubectl apply -f cm/ingress-links.yaml deploy/deploy-ingress_proxy.yaml
 ```
 
 ## SSL Cert
@@ -48,4 +50,4 @@ certbot certonly --webroot --webroot-path /tmp/letsencrypt -m "ff4500@gmail.com"
 
 ### Renew
 
-The SSL cert will be renew from cron. Check `Dockerfile` for the detail
+The SSL cert will be renewed by cron. Check `Dockerfile` for the detail
