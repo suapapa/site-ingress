@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"log"
 	"net/http"
 	"strings"
@@ -28,7 +27,6 @@ func redirectHadler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	subDomain, subPath := genFakeSubdomain(urlPath)
-	log.Printf("rp: %s, sd: %s, sp: %s", urlPath, subDomain, subPath)
 
 	// redirect for external sites
 	link, ok := redirects[subDomain]
@@ -38,10 +36,11 @@ func redirectHadler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// reverse proxy for apps from same k8s cluster
-	if link.ReverseProxy {
-		// TODO: cache proxy handlers
+	if link.RP {
+		log.Printf("rp: %s => '%s' (sd=%s)", urlPath, link.RPLink+subPath, subDomain)
+		// TODO: cache proxy handlers?
 		serveReverseProxy(
-			fmt.Sprintf(link.Link, subDomain)+subPath,
+			link.RPLink+subPath,
 			w, r,
 		)
 		return

@@ -10,14 +10,17 @@ import (
 )
 
 type Link struct {
-	Name         string `yaml:"name"`
-	Link         string `yaml:"link"`
-	Desc         string `yaml:"desc,omitempty"`
-	ReverseProxy bool   `yaml:"reverse_proxy,omitempty"`
-	PortFoward   bool   `yaml:"port_foward,omitempty"`
-	InPort       int    `yaml:"in_port,omitempty"`
-	OutPort      int    `yaml:"out_port,omitempty"`
-	Hide         bool   `yaml:"hide,omitempty"`
+	Name string `yaml:"name"`
+	Link string `yaml:"link"`
+	Desc string `yaml:"desc,omitempty"`
+	// for rever-proxy
+	RP     bool   `yaml:"reverse_proxy,omitempty"`
+	RPLink string `yaml:"reverse_proxy_link,omitempty"`
+	// for port-foward
+	PortFoward bool `yaml:"port_foward,omitempty"`
+	InPort     int  `yaml:"in_port,omitempty"`
+	OutPort    int  `yaml:"out_port,omitempty"`
+	Hide       bool `yaml:"hide,omitempty"`
 }
 
 var (
