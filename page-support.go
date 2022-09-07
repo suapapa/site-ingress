@@ -24,7 +24,7 @@ func supportHandler(w http.ResponseWriter, r *http.Request) {
 			},
 			{
 				Name: "방명록",
-				Link: "https://forms.gle/nVUhgusmV1RLFXue9",
+				Link: "https://homin.dev/gb",
 				Desc: "좋은 말씀 전해주세요",
 			},
 		},
