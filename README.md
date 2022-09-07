@@ -2,15 +2,6 @@
 
 Live > [HERE](https://homin.dev) <
 
-## Create ConfigMap
-
-Links (where to go from this site):
-
-```bash
-kubectl create cm links --from-file=conf/links.yaml # create
-kubectl edit cm links -o yaml # edit
-```
-
 ## CICD
 
 > Currently CICD is manual :(
@@ -28,9 +19,8 @@ Deployment:
 > k8s configs are move to [suapapa/k8s-homin.dev](https://github.com/suapapa/k8s-homin.dev)
 
 ```bash
-kubectl apply -f cm/ingress-links.yaml deploy/deploy-ingress_proxy.yaml
+k apply -f cm/ingress-links.yaml deploy/deploy-ingress_proxy.yaml
 ```
-
 ## SSL Cert
 
 ### Create
