@@ -29,6 +29,9 @@ RUN SLEEPTIME=$(awk 'BEGIN{srand(); print int(rand()*(3600+1))}'); \
 COPY --from=builder /build/create_ssl_cert.sh /bin/create_ssl_cert.sh
 COPY --from=builder /build/app /bin/app
 
+ENV TELEGRAM_APITOKEN="secret"
+ENV TELEGRAM_ROOM_ID="secret"
+
 EXPOSE 9001
 EXPOSE 443
 EXPOSE 80

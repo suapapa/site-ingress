@@ -86,6 +86,7 @@ func startHTTPSServer() {
 						nil,
 					); err != nil {
 						log.Printf("ERR: %v", err)
+						notifyErrToTelegram(err)
 					}
 				}()
 				return

@@ -2,7 +2,9 @@ package main
 
 import (
 	"crypto/md5"
+	"fmt"
 	"io"
+	"log"
 	"os"
 
 	"github.com/pkg/errors"
@@ -30,4 +32,12 @@ func md5sumFile(filePath string) ([]byte, error) {
 	}
 
 	return h.Sum(nil), nil
+}
+
+func notifyErrToTelegram(err error) {
+	msgFmt := "!! ERR on Homin.dev !!\n%v"
+
+	if err2 := sendMsgToTelegram(fmt.Sprintf(msgFmt, err)); err2 != nil {
+		log.Printf("ERR: %s", err2)
+	}
 }
