@@ -13,9 +13,14 @@ func supportHandler(w http.ResponseWriter, r *http.Request) {
 		Msg:   "사이트를 후원해 주세요",
 		Links: []*Link{
 			{
-				Name: "KakaoPay",
+				Name: "KakaoPay QR",
 				Link: "/img/kakaopay",
-				Desc: "카카오페이 QR코드",
+				Desc: "카카오페이 QR코드 <- 데스크탑에서는 여기로",
+			},
+			{
+				Name: "KakaoPay",
+				Link: "https://qr.kakaopay.com/281006011000002416281797",
+				Desc: "카카오페이 실행 <- 모바일에서는 여기로",
 			},
 			{
 				Name: "Paypal",
