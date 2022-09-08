@@ -75,7 +75,9 @@ func startHTTPSServer() {
 			log.Print("ERR: fail to lauch https server")
 			return
 		case <-tick.C:
-			if checkSSLCertUpdated() == nil {
+			if err := checkSSLCertUpdated(); err != nil {
+				log.Printf("ERR: %v", err)
+			} else {
 				go func() {
 					log.Printf("listening https on :%d", httpsPort)
 					if err := http.ListenAndServeTLS(

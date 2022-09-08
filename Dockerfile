@@ -26,6 +26,7 @@ RUN SLEEPTIME=$(awk 'BEGIN{srand(); print int(rand()*(3600+1))}'); \
 	echo "0 0,12 * * * root sleep $SLEEPTIME && certbot renew -q" | \
 	tee -a /etc/crontabs/root > /dev/null
 
+COPY --from=builder /build/create_ssl_cert.sh /bin/create_ssl_cert.sh
 COPY --from=builder /build/app /bin/app
 
 EXPOSE 9001
