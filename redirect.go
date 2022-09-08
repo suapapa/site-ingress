@@ -14,7 +14,7 @@ func redirectHadler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	log.Printf("hit basePath, %s", urlPath)
+	// log.Printf("hit basePath, %s", urlPath)
 	if urlPath == "/" {
 		http.Redirect(w, r, "/ingress", http.StatusMovedPermanently)
 		return
@@ -31,6 +31,7 @@ func redirectHadler(w http.ResponseWriter, r *http.Request) {
 	// redirect for external sites
 	link, ok := redirects[subDomain]
 	if !ok {
+		log.Printf("hit %s from %s", urlPath, r.RemoteAddr)
 		http.Redirect(w, r, "/404", http.StatusMovedPermanently)
 		return
 	}
