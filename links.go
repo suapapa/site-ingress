@@ -3,7 +3,6 @@ package main
 import (
 	"log"
 	"os"
-	"time"
 
 	"github.com/pkg/errors"
 	"gopkg.in/yaml.v3"
@@ -24,29 +23,47 @@ type Link struct {
 }
 
 var (
-	links                  []*Link
-	lastLinksLoadTimeStamp time.Time
-	redirects              = map[string]*Link{}
+	links []*Link
+	// lastLinksLoadTimeStamp time.Time
+	redirects = map[string]*Link{}
 )
 
 // update links every in 30 min interval
 func updateLinks() error {
-	if links == nil || time.Since(lastLinksLoadTimeStamp) > 30*time.Minute {
-		ls, err := loadLinksConf(linksConf)
-		if err != nil {
-			return errors.Wrap(err, "fail to get links")
-		}
-		// update redirect map
-		for k := range redirects {
-			delete(redirects, k)
-		}
-		for i, l := range ls {
-			redirects[l.Name] = ls[i]
-		}
+	// It turns out I should restart pod (rolling update) to
+	// apply updated ConfigMap. Following code not working. :(
+	/*
+		if links == nil || time.Since(lastLinksLoadTimeStamp) > 30*time.Minute {
+			ls, err := loadLinksConf(linksConf)
+			if err != nil {
+				return errors.Wrap(err, "fail to get links")
+			}
+			// update redirect map
+			for k := range redirects {
+				delete(redirects, k)
+			}
+			for i, l := range ls {
+				redirects[l.Name] = ls[i]
+			}
 
-		lastLinksLoadTimeStamp = time.Now()
-		links = ls
+			lastLinksLoadTimeStamp = time.Now()
+			links = ls
+		}
+	*/
+	ls, err := loadLinksConf(linksConf)
+	if err != nil {
+		return errors.Wrap(err, "fail to get links")
 	}
+	// update redirect map
+	for k := range redirects {
+		delete(redirects, k)
+	}
+	for i, l := range ls {
+		redirects[l.Name] = ls[i]
+	}
+
+	// lastLinksLoadTimeStamp = time.Now()
+	links = ls
 
 	return nil
 }

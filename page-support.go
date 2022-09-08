@@ -15,7 +15,7 @@ func supportHandler(w http.ResponseWriter, r *http.Request) {
 			{
 				Name: "KakaoPay QR",
 				Link: "/img/kakaopay",
-				Desc: "카카오페이 QR코드 <- 데스크탑에서는 여기로",
+				Desc: "카카오페이 QR <- 데스크탑에서는 여기로",
 			},
 			{
 				Name: "KakaoPay",
