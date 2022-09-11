@@ -50,6 +50,10 @@ func updateLinks() error {
 			links = ls
 		}
 	*/
+	if links != nil {
+		return nil
+	}
+
 	ls, err := loadLinksConf(linksConf)
 	if err != nil {
 		return errors.Wrap(err, "fail to get links")

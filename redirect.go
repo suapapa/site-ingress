@@ -3,6 +3,7 @@ package main
 import (
 	"log"
 	"net/http"
+	"path"
 	"strings"
 )
 
@@ -38,10 +39,10 @@ func redirectHadler(w http.ResponseWriter, r *http.Request) {
 
 	// reverse proxy for apps from same k8s cluster
 	if link.RP {
-		log.Printf("rp: %s => '%s' (sd=%s)", urlPath, link.RPLink+subPath, subDomain)
+		log.Printf("rp: %s => '%s'", urlPath, path.Join(link.RPLink, subDomain, subPath))
 		// TODO: cache proxy handlers?
 		serveReverseProxy(
-			link.RPLink+subPath,
+			link.RPLink,
 			w, r,
 		)
 		return
