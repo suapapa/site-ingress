@@ -9,12 +9,12 @@ import (
 func supportHandler(w http.ResponseWriter, r *http.Request) {
 	c := &PageContent{
 		Title: "💸 후원 💸",
-		Img:   "/img/iamfine",
+		Img:   "https://homin.dev/asset/image/iamfine.jpg",
 		Msg:   "사이트를 후원해 주세요",
 		Links: []*Link{
 			{
 				Name: "KakaoPay QR",
-				Link: "/img/kakaopay",
+				Link: "https://homin.dev/asset/image/kakaopay.jpg",
 				Desc: "카카오페이 QR <- 데스크탑에서는 여기로",
 			},
 			{

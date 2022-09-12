@@ -1,6 +1,7 @@
 package main
 
 import (
+	_ "embed"
 	"flag"
 	"fmt"
 	"log"
@@ -13,6 +14,9 @@ const (
 )
 
 var (
+	//go:embed asset/favicon.ico
+	favicon []byte
+
 	httpPort, httpsPort int
 	linksConf           string
 )
@@ -29,9 +33,12 @@ func main() {
 	http.HandleFunc("/ingress", ingressHandler)
 	http.HandleFunc("/404", notfoundHandler)
 	http.HandleFunc("/support", supportHandler)
+	http.HandleFunc("/favicon.ico", func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "image/x-icon")
+		w.Write(favicon)
+	})
 
 	http.HandleFunc("/", redirectHadler)
-	http.HandleFunc("/img/", imgHandler)
 
 	http.Handle("/.well-known/acme-challenge/", NewAcmeChallenge("/tmp/letsencrypt/"))
 

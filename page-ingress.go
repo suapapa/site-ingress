@@ -14,7 +14,7 @@ func ingressHandler(w http.ResponseWriter, r *http.Request) {
 
 	c := &PageContent{
 		Title:     "🔥 대문 🔥",
-		Img:       "/img/iamfine",
+		Img:       "https://homin.dev/asset/image/iamfine.jpg",
 		Msg:       "어디로 가야하죠 아죠씨",
 		Links:     links,
 		LastWords: "<a href=\"/support\">대가없는 🥩 환영합니다</a>",

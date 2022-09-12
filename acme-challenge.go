@@ -72,7 +72,7 @@ func startHTTPSServer() {
 	for {
 		select {
 		case <-ctx.Done():
-			log.Print("ERR: fail to lauch https server")
+			log.Print("ERR: fail to launch https server")
 			return
 		case <-tick.C:
 			if err := checkSSLCertUpdated(); err != nil {

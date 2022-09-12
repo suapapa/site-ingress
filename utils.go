@@ -35,7 +35,7 @@ func md5sumFile(filePath string) ([]byte, error) {
 }
 
 func notifyErrToTelegram(err error) {
-	msgFmt := "!! ERR on Homin.dev !!\n%v"
+	msgFmt := "## ERR on ingress ##\n%v"
 
 	if err2 := sendMsgToTelegram(fmt.Sprintf(msgFmt, err)); err2 != nil {
 		log.Printf("ERR: %s", err2)
