@@ -1,44 +1,31 @@
 <!DOCTYPE html>
-<html>
-
+<html lang="en">
 <head>
-<style>
-.logo {
-  display: flex;
-  justify-content: center;
-}
-h1, p, footer {
-  text-align: center;
-}
-ul {
-  display: table;
-  margin-left: auto;
-  margin-right: auto;
-}
-</style>
-
-<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9322146642801439"
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=Edge">
+  <title>{{.Title}} - Homin.dev </title>
+  <meta name="author" content="Homin Lee">
+  <meta name="description" content="Homin.dev web sites">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="https://homin.dev/asset/tachyons.min.css">
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9322146642801439"
      crossorigin="anonymous"></script>
-
-<title>{{.Title}} - Homin.dev</title>
 </head>
+<body class="tc">
+<h1 class="f1 lh-title pa2">{{.Title}}</h1>
+<img src="{{.Img}}">
 
-<body>
-<h1 class="title">{{.Title}}</h1>
-<p class="img"><img src="{{.Img}}"></p>
+<p class="f3 fw3 pa3">"{{.Msg}}"</p>
 
-<p class="msg">{{.Msg}}</p>
-<ul>
+<div class="flex flex-wrap justify-center pr4 pl4 items-start lh-copy">
 {{range .Links}}
-  {{if not .Hide}}<li><a href="{{.Link}}">{{.Name}}</a> : {{.Desc}}</li>{{end}}
+  {{if not .Hide}}<div class="bg-near-white w5 mw5 tl ma2 pa2"><p class="f4 pa0 ma0"><a href="{{.Link}}">/{{.Name}}</a></p><p class="f6 pa0 ma0">{{.Desc}}</p></div>{{end}}
 {{end}}
-</ul>
+</div>
 
-<p class="lastwords">{{.LastWords}}</p>
-
-<footer>
-  <small>&copy; Homin Lee &lt;ff4500@gmail.com&gt;; All rights reserved.</small>
+<footer class="white-80 bg-navy fg-white absolute bottom-0 w-100 pa2">
+  <p class="ma0"><a class="f4 white-80 lh-copy" href="https://homin.dev/support">{{.LastWords}}</a></p>
+  <small>© Homin Lee &lt;ff4500@gmail.com&gt;; All rights reserved.</small>
 </footer>
 </body>
-
 </html>
