@@ -17,9 +17,9 @@ func notfoundHandler(w http.ResponseWriter, r *http.Request) {
 		Msg:   "이 산이 아닌갑다",
 		Links: []*Link{
 			{
-				Name: "대문",
+				Name: "ingress",
 				Link: "/ingress",
-				Desc: "다른 페이지들로 이동",
+				Desc: "대문으로 이동",
 			},
 		},
 		LastWords: "<a href=\"/support\">대가없는 🥩 환영합니다</a>",
