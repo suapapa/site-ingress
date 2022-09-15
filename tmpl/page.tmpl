@@ -17,7 +17,12 @@
 
 <div class="flex flex-wrap justify-center pr4 pl4 items-start lh-copy">
 {{range .Links}}
-  {{if not .Hide}}<div class="bg-near-white w5 mw5 tl ma2 pa2 shadow-3"><p class="f3 b pa0 ma0"><a href="{{.Link}}">/{{.Name}}</a></p><p class="f6 pa0 ma0">{{.Desc}}</p></div>{{end}}
+  {{if not .Hide}}
+  <div class="bg-near-white w5 mw5 tl ma2 pa2 shadow-3">
+  <p class="f3 b pa0 ma0"><a href="{{.Link}}" class="link underline-hover navy hover-orange">/{{.Name}}</a></p>
+  <p class="f6 pa0 ma0">{{.Desc}}</p>
+  </div>
+  {{end}}
 {{end}}
 </div>
 
@@ -36,7 +41,7 @@
 </script>
 
 <footer class="bottom-0 w-100 pa2">
-  <p class="ma0"><a class="f4" href="https://homin.dev/support">{{.LastWords}}</a></p>
+  <p class="ma0"><a class="f4" href="https://homin.dev/support" class="link underline-hover navy hover-orange">{{.LastWords}}</a></p>
   <small>© Homin Lee &lt;ff4500@gmail.com&gt;; All rights reserved.</small>
 </footer>
 </body>
