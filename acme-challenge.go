@@ -77,6 +77,7 @@ func startHTTPSServer() {
 		case <-tick.C:
 			if err := checkSSLCertUpdated(); err != nil {
 				log.Printf("ERR: %v", err)
+				notifyErrToTelegram(err)
 			} else {
 				go func() {
 					log.Printf("listening https on :%d", httpsPort)

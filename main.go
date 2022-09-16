@@ -2,10 +2,15 @@ package main
 
 import (
 	_ "embed"
+	"errors"
 	"flag"
 	"fmt"
 	"log"
 	"net/http"
+	"os"
+	"os/exec"
+	"os/signal"
+	"syscall"
 )
 
 const (
@@ -24,6 +29,8 @@ var (
 func main() {
 	log.Println("homin.dev ingress start")
 	defer log.Println("homin.dev ingress stop")
+
+	notifyErrToTelegram(errors.New("start homin.dev ingress"))
 
 	flag.IntVar(&httpPort, "http", 80, "set http port")
 	flag.IntVar(&httpsPort, "https", 443, "set https port")
@@ -53,6 +60,17 @@ func main() {
 	go startHTTPSServer()
 	go startPortFoward()
 
-	exitCh := make(chan any)
-	<-exitCh
+	go func() {
+		out, err := exec.Command("/create_ssl_cert.sh").Output()
+		if err != nil {
+			log.Printf("ERR: %v", err)
+			notifyErrToTelegram(err)
+			return
+		}
+		log.Printf("INFO: %s", out)
+	}()
+
+	c := make(chan os.Signal, 1)
+	signal.Notify(c, os.Interrupt, syscall.SIGTERM)
+	<-c
 }
