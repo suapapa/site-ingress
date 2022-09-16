@@ -61,7 +61,7 @@ func main() {
 	go startPortFoward()
 
 	go func() {
-		out, err := exec.Command("/create_ssl_cert.sh").Output()
+		out, err := exec.Command("/bin/create_ssl_cert.sh").Output()
 		if err != nil {
 			log.Printf("ERR: %v", err)
 			notifyErrToTelegram(err)
