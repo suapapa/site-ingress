@@ -8,7 +8,6 @@ import (
 	"log"
 	"net/http"
 	"os"
-	"os/exec"
 	"os/signal"
 	"syscall"
 )
@@ -59,16 +58,6 @@ func main() {
 
 	go startHTTPSServer()
 	go startPortFoward()
-
-	go func() {
-		out, err := exec.Command("/bin/create_ssl_cert.sh").Output()
-		if err != nil {
-			log.Printf("ERR: %v", err)
-			notifyErrToTelegram(err)
-			return
-		}
-		log.Printf("INFO: %s", out)
-	}()
 
 	c := make(chan os.Signal, 1)
 	signal.Notify(c, os.Interrupt, syscall.SIGTERM)

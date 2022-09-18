@@ -7,6 +7,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"os/exec"
 	"sync"
 	"time"
 
@@ -19,7 +20,9 @@ type AcmeChallenge struct {
 
 var (
 	md5SSLCert, md5SSLKey []byte
-	startHTTPSMutex       sync.Mutex
+
+	startingHTTPS   bool
+	startHTTPSMutex sync.Mutex
 )
 
 func NewAcmeChallenge(acPath string) *AcmeChallenge {
@@ -38,7 +41,13 @@ func (ac *AcmeChallenge) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 func checkSSLCertUpdated() error {
 	if !filesExist(SSL_CERT_FILE) || !filesExist(SSL_KEY_FILE) {
-		return fmt.Errorf("u should creat ssl cert first")
+		out, err := exec.Command("/bin/create_ssl_cert.sh").Output()
+		if err != nil {
+			notifyErrToTelegram(err)
+			return errors.Wrap(err, "check ssl fail")
+		}
+		log.Printf("INFO: %s", out)
+		return errors.New("SSL just created")
 	}
 
 	currMD5SSLCert, err := md5sumFile(SSL_CERT_FILE)
@@ -63,7 +72,11 @@ func checkSSLCertUpdated() error {
 
 func startHTTPSServer() {
 	startHTTPSMutex.Lock()
-	defer startHTTPSMutex.Unlock()
+	if startingHTTPS {
+		return
+	}
+	startingHTTPS = true
+	startHTTPSMutex.Unlock()
 
 	ctx, cancelF := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancelF()
