@@ -20,6 +20,8 @@ const (
 var (
 	//go:embed asset/favicon.ico
 	favicon []byte
+	//go:embed asset/ads.txt
+	adsTxt []byte
 
 	httpPort, httpsPort int
 	linksConf           string
@@ -42,6 +44,10 @@ func main() {
 	http.HandleFunc("/favicon.ico", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "image/x-icon")
 		w.Write(favicon)
+	})
+	http.HandleFunc("/ads.txt", func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "text/plain")
+		w.Write(adsTxt)
 	})
 
 	http.HandleFunc("/", redirectHadler)
