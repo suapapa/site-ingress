@@ -17,7 +17,7 @@ func ingressHandler(w http.ResponseWriter, r *http.Request) {
 		Img:       "https://homin.dev/asset/image/ingress.jpg",
 		Msg:       "어디로 가야하죠 아죠씨",
 		Links:     links,
-		LastWords: "<a href=\"/support\">대가없는 🥩 환영합니다</a>",
+		LastWords: "<a href=\"https://homin.dev/blog/post/20220908_homin-dev_with_k8s/\">사이트 소개</a>",
 	}
 
 	err = tmplPage.Execute(w, c)
