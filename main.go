@@ -42,8 +42,8 @@ func main() {
 	http.HandleFunc("/404", notfoundHandler)
 	http.HandleFunc("/support", supportHandler)
 	http.HandleFunc("/favicon.ico", func(w http.ResponseWriter, r *http.Request) {
-		if b, err := efs.ReadFile("/asset/favicon.ico"); err != nil {
-			log.Printf("fail to read asset for %s", r.URL.Path)
+		if b, err := efs.ReadFile("asset/favicon.ico"); err != nil {
+			log.Printf("fail to read asset for %s, %v", r.URL.Path, err)
 			w.WriteHeader(http.StatusInternalServerError)
 		} else {
 			w.Header().Set("Content-Type", "image/x-icon")
@@ -51,8 +51,8 @@ func main() {
 		}
 	})
 	http.HandleFunc("/ads.txt", func(w http.ResponseWriter, r *http.Request) {
-		if b, err := efs.ReadFile("/asset/ads.txt"); err != nil {
-			log.Printf("fail to read asset for %s", r.URL.Path)
+		if b, err := efs.ReadFile("asset/ads.txt"); err != nil {
+			log.Printf("fail to read asset for %s, %v", r.URL.Path, err)
 			w.WriteHeader(http.StatusInternalServerError)
 		} else {
 			w.Header().Set("Content-Type", "text/plain")
@@ -60,8 +60,8 @@ func main() {
 		}
 	})
 	http.HandleFunc("/sitemap.xml", func(w http.ResponseWriter, r *http.Request) {
-		if b, err := efs.ReadFile("/asset/sitemap.xml"); err != nil {
-			log.Printf("fail to read asset for %s", r.URL.Path)
+		if b, err := efs.ReadFile("asset/sitemap.xml"); err != nil {
+			log.Printf("fail to read asset for %s, %v", r.URL.Path, err)
 			w.WriteHeader(http.StatusInternalServerError)
 		} else {
 			w.Header().Set("Content-Type", "text/xml")
