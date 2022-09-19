@@ -19,12 +19,6 @@ func redirectHadler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if urlPath == "/favicon.ico" {
-		w.Header().Set("Content-Type", "image/x-icon")
-		w.Write(favicon)
-		return
-	}
-
 	// use first depth of path to sub-domain
 	subDomain, _ := getSubdomain2(urlPath)
 

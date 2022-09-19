@@ -1,7 +1,7 @@
 package main
 
 import (
-	_ "embed"
+	"embed"
 	"errors"
 	"flag"
 	"fmt"
@@ -19,9 +19,9 @@ const (
 
 var (
 	//go:embed asset/favicon.ico
-	favicon []byte
 	//go:embed asset/ads.txt
-	adsTxt []byte
+	//go:embed asset/sitemap.xml
+	efs embed.FS
 
 	httpPort, httpsPort int
 	linksConf           string
@@ -42,12 +42,31 @@ func main() {
 	http.HandleFunc("/404", notfoundHandler)
 	http.HandleFunc("/support", supportHandler)
 	http.HandleFunc("/favicon.ico", func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Content-Type", "image/x-icon")
-		w.Write(favicon)
+		if b, err := efs.ReadFile("/asset/favicon.ico"); err != nil {
+			log.Printf("fail to read asset for %s", r.URL.Path)
+			w.WriteHeader(http.StatusInternalServerError)
+		} else {
+			w.Header().Set("Content-Type", "image/x-icon")
+			w.Write(b)
+		}
 	})
 	http.HandleFunc("/ads.txt", func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Content-Type", "text/plain")
-		w.Write(adsTxt)
+		if b, err := efs.ReadFile("/asset/ads.txt"); err != nil {
+			log.Printf("fail to read asset for %s", r.URL.Path)
+			w.WriteHeader(http.StatusInternalServerError)
+		} else {
+			w.Header().Set("Content-Type", "text/plain")
+			w.Write(b)
+		}
+	})
+	http.HandleFunc("/sitemap.xml", func(w http.ResponseWriter, r *http.Request) {
+		if b, err := efs.ReadFile("/asset/sitemap.xml"); err != nil {
+			log.Printf("fail to read asset for %s", r.URL.Path)
+			w.WriteHeader(http.StatusInternalServerError)
+		} else {
+			w.Header().Set("Content-Type", "text/xml")
+			w.Write(b)
+		}
 	})
 
 	http.HandleFunc("/", redirectHadler)
