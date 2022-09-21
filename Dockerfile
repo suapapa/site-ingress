@@ -16,7 +16,7 @@ RUN upx -q -9 /build/app
 # ---
 FROM scratch
 
-# COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
+COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
 COPY --from=builder /build/app /bin/app
 
 ENV TELEGRAM_APITOKEN="secret"
