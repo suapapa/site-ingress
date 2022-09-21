@@ -34,7 +34,13 @@ func main() {
 	flag.StringVar(&linksConf, "c", "conf/links.yaml", "links")
 	flag.Parse()
 
+	if urlPrefix[0] != '/' {
+		urlPrefix = "/" + urlPrefix
+	}
+
 	http.HandleFunc(urlPrefix, rootHandler)
+	http.HandleFunc(urlPrefix+"/support", supportHandler)
+	// http.HandleFunc("/", notfoundHandler)
 	// start HTTPServer
 	go func() {
 		log.Printf("listening http on :%d", httpPort)
