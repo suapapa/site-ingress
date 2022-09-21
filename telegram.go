@@ -9,7 +9,8 @@ import (
 )
 
 var (
-	tgBot       *tgbotapi.BotAPI
+	tgBot *tgbotapi.BotAPI
+
 	tgAPIToke   = os.Getenv("TELEGRAM_APITOKEN")
 	tgRoomIDStr = os.Getenv("TELEGRAM_ROOM_ID")
 )

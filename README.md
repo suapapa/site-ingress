@@ -1,6 +1,6 @@
 # ingress site for Homin.dev
 
-Live > [HERE](https://homin.dev) <
+Live > [HERE](https://homin.dev/ingress) <
 
 ## CICD
 
@@ -21,23 +21,3 @@ Deployment:
 ```bash
 k apply -f cm/ingress-links.yaml deploy/deploy-ingress_proxy.yaml
 ```
-## SSL Cert
-
-### Create
-
-Certbot which is a CLI tool for Let'sEncrypt needs iteractive for create first SSL cert. So;
-
-Connect the POD:
-
-```bash
-kubectl exec -it ingress-proxy-54d459b8bd-2pqxc -- /bin/sh
-```
-And, Create new cert in the POD:
-
-```bash
-certbot certonly --webroot --webroot-path /tmp/letsencrypt -m "ff4500@gmail.com" -d "homin.dev"  --agree-tos
-```
-
-### Renew
-
-The SSL cert will be renewed by cron. Check `Dockerfile` for the detail

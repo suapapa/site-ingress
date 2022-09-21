@@ -28,8 +28,8 @@ func supportHandler(w http.ResponseWriter, r *http.Request) {
 				Desc: "페이팔 송금",
 			},
 			{
-				Name: "ingress",
-				Link: "/ingress",
+				Name: "/ingress",
+				Link: "https://homin.dev/ingress",
 				Desc: "대문으로 이동",
 			},
 		},
