@@ -29,7 +29,7 @@ func main() {
 		notifyToTelegram("homin.dev ingress stop")
 	}()
 
-	flag.StringVar(&urlPrefix, "p", "/", "set url prefix")
+	flag.StringVar(&urlPrefix, "p", "/ingress", "set url prefix")
 	flag.IntVar(&httpPort, "http", 8080, "set http port")
 	flag.StringVar(&linksConf, "c", "conf/links.yaml", "links")
 	flag.Parse()
@@ -38,9 +38,10 @@ func main() {
 		urlPrefix = "/" + urlPrefix
 	}
 
+	http.HandleFunc("/", rootHandler)
 	http.HandleFunc(urlPrefix, rootHandler)
 	http.HandleFunc(urlPrefix+"/support", supportHandler)
-	// http.HandleFunc("/", notfoundHandler)
+	http.HandleFunc(urlPrefix+"/404", notfoundHandler)
 	// start HTTPServer
 	go func() {
 		log.Printf("listening http on :%d", httpPort)
