@@ -18,7 +18,7 @@ func notfoundHandler(w http.ResponseWriter, r *http.Request) {
 		Links: []*Link{
 			{
 				Name: "ingress",
-				Link: "/ingress",
+				Link: "/",
 				Desc: "대문으로 이동",
 			},
 		},

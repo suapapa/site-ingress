@@ -29,7 +29,7 @@ func supportHandler(w http.ResponseWriter, r *http.Request) {
 			},
 			{
 				Name: "/ingress",
-				Link: "https://homin.dev/ingress",
+				Link: "https://homin.dev/",
 				Desc: "대문으로 이동",
 			},
 		},

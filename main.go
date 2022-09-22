@@ -23,10 +23,8 @@ var (
 
 func main() {
 	log.Println("homin.dev ingress start")
-	notifyToTelegram("homin.dev ingress start")
 	defer func() {
 		log.Println("homin.dev ingress stop")
-		notifyToTelegram("homin.dev ingress stop")
 	}()
 
 	flag.StringVar(&urlPrefix, "p", "/ingress", "set url prefix")
@@ -39,6 +37,7 @@ func main() {
 	}
 
 	http.HandleFunc("/", rootHandler)
+	http.HandleFunc("/404", notfoundHandler)
 	http.HandleFunc(urlPrefix, rootHandler)
 	http.HandleFunc(urlPrefix+"/support", supportHandler)
 	http.HandleFunc(urlPrefix+"/404", notfoundHandler)

@@ -6,7 +6,6 @@ import (
 )
 
 func rootHandler(w http.ResponseWriter, r *http.Request) {
-
 	err := updateLinks()
 	if err != nil {
 		log.Printf("ERR: %v", err)
