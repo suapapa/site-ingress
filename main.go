@@ -40,7 +40,8 @@ func main() {
 	http.HandleFunc(urlPrefix+"/support", supportHandler)
 	http.HandleFunc(urlPrefix+"/404", notfoundHandler)
 	http.HandleFunc("/404", notfoundHandler)
-	http.HandleFunc("/", rootHandler)
+	// http.HandleFunc("/", rootHandler)
+
 	// start HTTPServer
 	go func() {
 		log.Printf("listening http on :%d", httpPort)
