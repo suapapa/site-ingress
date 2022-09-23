@@ -13,6 +13,11 @@ func supportHandler(w http.ResponseWriter, r *http.Request) {
 		Msg:   "사이트를 후원해 주세요",
 		Links: []*Link{
 			{
+				Name: "Buy Me a coffee",
+				Link: "https://www.buymeacoffee.com/homin",
+				Desc: "☕️ 충전해주기",
+			},
+			{
 				Name: "KakaoPay QR",
 				Link: "https://homin.dev/asset/image/kakaopay.jpg",
 				Desc: "카카오페이 QR <- 데스크탑에서는 여기로",
