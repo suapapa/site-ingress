@@ -25,6 +25,7 @@ func notfoundHandler(w http.ResponseWriter, r *http.Request) {
 		LastWords: "<a href=\"/support\">대가없는 🥩 환영합니다</a>",
 	}
 
+	w.WriteHeader(http.StatusNotFound)
 	err = tmplPage.Execute(w, c)
 	if err != nil {
 		log.Printf("ERR: %v", err)

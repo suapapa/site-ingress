@@ -36,10 +36,13 @@ func main() {
 		urlPrefix = "/" + urlPrefix
 	}
 
-	http.HandleFunc(urlPrefix, rootHandler)
-	http.HandleFunc(urlPrefix+"/support", supportHandler)
-	http.HandleFunc(urlPrefix+"/404", notfoundHandler)
+	if urlPrefix != "/" {
+		http.HandleFunc(urlPrefix+"/support", supportHandler)
+		http.HandleFunc(urlPrefix+"/404", notfoundHandler)
+		http.HandleFunc(urlPrefix, rootHandler)
+	}
 	http.HandleFunc("/404", notfoundHandler)
+	http.HandleFunc("/support", supportHandler)
 	http.HandleFunc("/", rootHandler)
 
 	// start HTTPServer
