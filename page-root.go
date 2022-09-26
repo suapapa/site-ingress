@@ -1,7 +1,6 @@
 package main
 
 import (
-	"log"
 	"net/http"
 )
 
@@ -22,6 +21,6 @@ func rootHandler(w http.ResponseWriter, r *http.Request) {
 
 	err = tmplPage.Execute(w, c)
 	if err != nil {
-		log.Printf("ERR: %v", err)
+		log.Errorf("fail on root handler: %v", err)
 	}
 }

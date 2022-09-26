@@ -2,7 +2,6 @@ package main
 
 import (
 	_ "embed"
-	"log"
 	"net/http"
 
 	"github.com/suapapa/site-ingress/ingress"
@@ -44,6 +43,6 @@ func supportHandler(w http.ResponseWriter, r *http.Request) {
 
 	err := tmplPage.Execute(w, c)
 	if err != nil {
-		log.Printf("ERR: %v", err)
+		log.Errorf("fail on support handler: %v", err)
 	}
 }

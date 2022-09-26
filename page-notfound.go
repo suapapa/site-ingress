@@ -1,7 +1,6 @@
 package main
 
 import (
-	"log"
 	"net/http"
 
 	"github.com/suapapa/site-ingress/ingress"
@@ -25,6 +24,6 @@ func notfoundHandler(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusNotFound)
 	err := tmplPage.Execute(w, c)
 	if err != nil {
-		log.Printf("ERR: %v", err)
+		log.Errorf("fail on not found handler: %v", err)
 	}
 }
