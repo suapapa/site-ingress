@@ -3,19 +3,16 @@ package main
 import (
 	"log"
 	"net/http"
+
+	"github.com/suapapa/site-ingress/ingress"
 )
 
 func notfoundHandler(w http.ResponseWriter, r *http.Request) {
-	err := updateLinks()
-	if err != nil {
-		log.Printf("ERR: %v", err)
-	}
-
 	c := &PageContent{
 		Title: "🚧 404 🚧",
 		Img:   "https://homin.dev/asset/image/404.jpg",
 		Msg:   "이 산이 아닌갑다",
-		Links: []*Link{
+		Links: []*ingress.Link{
 			{
 				Name: "ingress",
 				Link: "/",
@@ -26,7 +23,7 @@ func notfoundHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.WriteHeader(http.StatusNotFound)
-	err = tmplPage.Execute(w, c)
+	err := tmplPage.Execute(w, c)
 	if err != nil {
 		log.Printf("ERR: %v", err)
 	}
