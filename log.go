@@ -18,15 +18,10 @@ func init() {
 
 func initLogger() {
 	logger := &logrus.Logger{
-		Out:   os.Stderr,
-		Level: logrus.InfoLevel,
-		Hooks: make(logrus.LevelHooks),
-		Formatter: &prefixed.TextFormatter{
-			ForceColors:     true,
-			TimestampFormat: time.RFC3339,
-			FullTimestamp:   true,
-			ForceFormatting: true,
-		},
+		Out:       os.Stderr,
+		Level:     logrus.InfoLevel,
+		Hooks:     make(logrus.LevelHooks),
+		Formatter: newLogFormatter(),
 	}
 
 	hostname, _ := os.Hostname()
@@ -36,4 +31,29 @@ func initLogger() {
 		"program":  programName,
 		"ver":      programVer,
 	})
+}
+
+// log formatter to print log in KST timezone
+type logFommater struct {
+	ptf *prefixed.TextFormatter
+	loc *time.Location
+}
+
+func newLogFormatter() *logFommater {
+	ptf := prefixed.TextFormatter{
+		ForceColors:     true,
+		TimestampFormat: time.RFC3339,
+		FullTimestamp:   true,
+		ForceFormatting: true,
+	}
+
+	return &logFommater{
+		ptf: &ptf,
+		loc: time.FixedZone("KST", +9*60*60),
+	}
+}
+
+func (f *logFommater) Format(e *logrus.Entry) ([]byte, error) {
+	e.Time = e.Time.In(f.loc)
+	return f.ptf.Format(e)
 }
