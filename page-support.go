@@ -2,8 +2,9 @@ package main
 
 import (
 	_ "embed"
-	"log"
 	"net/http"
+
+	"github.com/suapapa/site-ingress/ingress"
 )
 
 func supportHandler(w http.ResponseWriter, r *http.Request) {
@@ -11,7 +12,7 @@ func supportHandler(w http.ResponseWriter, r *http.Request) {
 		Title: "💸 후원 💸",
 		Img:   "https://homin.dev/asset/image/gb.jpg",
 		Msg:   "사이트를 후원해 주세요",
-		Links: []*Link{
+		Links: []*ingress.Link{
 			{
 				Name: "Buy Me a coffee",
 				Link: "https://www.buymeacoffee.com/homin",
@@ -42,6 +43,6 @@ func supportHandler(w http.ResponseWriter, r *http.Request) {
 
 	err := tmplPage.Execute(w, c)
 	if err != nil {
-		log.Printf("ERR: %v", err)
+		log.Errorf("fail on support handler: %v", err)
 	}
 }

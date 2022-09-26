@@ -3,6 +3,8 @@ package main
 import (
 	_ "embed"
 	"text/template"
+
+	"github.com/suapapa/site-ingress/ingress"
 )
 
 var (
@@ -23,6 +25,6 @@ type PageContent struct {
 	Title     string
 	Img       string
 	Msg       string
-	Links     []*Link
+	Links     []*ingress.Link
 	LastWords string
 }
