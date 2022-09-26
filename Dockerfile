@@ -19,9 +19,6 @@ FROM scratch
 COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
 COPY --from=builder /build/app /bin/app
 
-ENV TELEGRAM_APITOKEN="secret"
-ENV TELEGRAM_ROOM_ID="secret"
-
 EXPOSE 8080
 
 WORKDIR /bin
