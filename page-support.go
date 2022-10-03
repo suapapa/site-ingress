@@ -10,7 +10,7 @@ import (
 func supportHandler(w http.ResponseWriter, r *http.Request) {
 	c := &PageContent{
 		Title: "💸 후원 💸",
-		Img:   "https://homin.dev/asset/image/gb.jpg",
+		Img:   "https://homin.dev/asset/image/flex_01_360.jpg",
 		Msg:   "사이트를 후원해 주세요",
 		Links: []*ingress.Link{
 			{
