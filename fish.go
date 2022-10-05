@@ -24,8 +24,13 @@ var (
 		},
 		{
 			Movie:     "Dune (2021)",
-			Line:      "A great man doesn't seek to lead, he's called to it",
+			Line:      "A great man doesn't seek to lead, he's called to it.",
 			Character: "Leto",
+		},
+		{
+			Movie:     "Interstella",
+			Line:      "We’ll find a way, we always have.",
+			Character: "Cooper",
 		},
 	}
 )
