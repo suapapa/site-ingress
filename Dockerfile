@@ -1,6 +1,8 @@
 # build stage
 FROM golang:1.19 as builder
 
+ARG PROGRAM_VER=dev-docker
+
 ENV CGO_ENABLED=0
 
 RUN apt-get -qq update && \
@@ -9,7 +11,7 @@ RUN apt-get -qq update && \
 COPY . /build
 WORKDIR /build
 
-RUN go build -o app
+RUN go build -ldflags "-X main.programVer=${PROGRAM_VER}" -o app
 RUN strip /build/app
 RUN upx -q -9 /build/app
 
