@@ -7,11 +7,15 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
+
+	"go.opentelemetry.io/otel"
 )
 
 const (
 	SSL_CERT_FILE = "/etc/letsencrypt/live/homin.dev/fullchain.pem"
 	SSL_KEY_FILE  = "/etc/letsencrypt/live/homin.dev/privkey.pem"
+
+	tracerName = "http-handler"
 )
 
 var (
@@ -35,6 +39,15 @@ func main() {
 	flag.StringVar(&linksConf, "c", "conf/links.yaml", "links")
 	flag.BoolVar(&debug, "d", false, "print debug logs")
 	flag.Parse()
+
+	tp, err := tracerProvider()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	// Register our TracerProvider as the global so any imported
+	// instrumentation in the future will default to using it.
+	otel.SetTracerProvider(tp)
 
 	if urlPrefix[0] != '/' {
 		urlPrefix = "/" + urlPrefix

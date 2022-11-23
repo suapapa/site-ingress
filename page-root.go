@@ -2,9 +2,14 @@ package main
 
 import (
 	"net/http"
+
+	"go.opentelemetry.io/otel"
 )
 
 func rootHandler(w http.ResponseWriter, r *http.Request) {
+	_, span := otel.Tracer(tracerName).Start(r.Context(), "ingress-root-page")
+	defer span.End()
+
 	links, err := getLinks()
 	if err != nil {
 		log.Printf("ERR: %v", err)
