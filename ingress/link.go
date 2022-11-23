@@ -13,7 +13,8 @@ type Link struct {
 	Desc string `yaml:"desc,omitempty"`
 	Hide bool   `yaml:"hide,omitempty"`
 	// for rever-proxy
-	RPLink string `yaml:"reverse_proxy_link,omitempty"`
+	RPLink       string `yaml:"reverse_proxy_link,omitempty"`
+	RPOmitPrefix bool   `yaml:"reverse_proxy_omit_prefix,omitempty"`
 	// for port-foward
 	PortFoward bool `yaml:"port_foward,omitempty"`
 	InPort     int  `yaml:"in_port,omitempty"`
