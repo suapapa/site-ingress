@@ -13,10 +13,10 @@ import (
 // the Jaeger exporter that will send spans to the provided url. The returned
 // TracerProvider will also use a Resource configured with all the information
 // about the application.
-func tracerProvider() (*tracesdk.TracerProvider, error) {
+func tracerProvider(url string) (*tracesdk.TracerProvider, error) {
 	// Create the Jaeger exporter
-	// exp, err := jaeger.New(jaeger.WithCollectorEndpoint(jaeger.WithEndpoint(url)))
-	exp, err := jaeger.New(jaeger.WithCollectorEndpoint()) //  "http://localhost:14268/api/traces"
+	// exp, err := jaeger.New(jaeger.WithCollectorEndpoint()) //  "http://localhost:14268/api/traces"
+	exp, err := jaeger.New(jaeger.WithCollectorEndpoint(jaeger.WithEndpoint(url)))
 	if err != nil {
 		return nil, err
 	}
