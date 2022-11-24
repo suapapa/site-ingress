@@ -40,7 +40,7 @@ func main() {
 	flag.BoolVar(&debug, "d", false, "print debug logs")
 	flag.Parse()
 
-	tp, err := tracerProvider()
+	tp, err := tracerProvider("http://simplest.default.svc.cluster.local:14268")
 	if err != nil {
 		log.Fatal(err)
 	}
