@@ -4,9 +4,13 @@ import (
 	"net/http"
 
 	"github.com/suapapa/site-ingress/ingress"
+	"go.opentelemetry.io/otel"
 )
 
 func notfoundHandler(w http.ResponseWriter, r *http.Request) {
+	_, span := otel.Tracer("").Start(r.Context(), "ingress-404-page")
+	defer span.End()
+
 	c := &PageContent{
 		Title: "🚧 404 🚧",
 		Img:   "https://homin.dev/asset/image/panic_01_360.jpg",

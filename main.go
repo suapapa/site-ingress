@@ -14,8 +14,6 @@ import (
 const (
 	SSL_CERT_FILE = "/etc/letsencrypt/live/homin.dev/fullchain.pem"
 	SSL_KEY_FILE  = "/etc/letsencrypt/live/homin.dev/privkey.pem"
-
-	tracerName = "http-handler"
 )
 
 var (
