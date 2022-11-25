@@ -1,6 +1,8 @@
 package main
 
 import (
+	"os"
+
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/exporters/jaeger"
 
@@ -28,6 +30,8 @@ func tracerProvider(url string) (*tracesdk.TracerProvider, error) {
 			semconv.SchemaURL,
 			semconv.ServiceNameKey.String(programName),
 			attribute.String("ver", programVer),
+			attribute.String("k8s-node-name", os.Getenv("K8S_NODE_NAME")),
+			attribute.String("k8s-pod-name", os.Getenv("K8S_POD_NAME")),
 			// attribute.Int64("ID", id),
 		)),
 	)
