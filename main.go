@@ -16,7 +16,7 @@ const (
 	SSL_CERT_FILE = "/etc/letsencrypt/live/homin.dev/fullchain.pem"
 	SSL_KEY_FILE  = "/etc/letsencrypt/live/homin.dev/privkey.pem"
 
-	otplEP = "http://simplest-collector.default.svc.cluster.local:4317"
+	otplEP = "simplest-collector.default.svc.cluster.local:4317"
 )
 
 var (
