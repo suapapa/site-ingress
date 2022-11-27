@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"flag"
 	"fmt"
 	"net/http"
@@ -14,6 +15,8 @@ import (
 const (
 	SSL_CERT_FILE = "/etc/letsencrypt/live/homin.dev/fullchain.pem"
 	SSL_KEY_FILE  = "/etc/letsencrypt/live/homin.dev/privkey.pem"
+
+	otplEP = "http://simplest-collector.default.svc.cluster.local:4317"
 )
 
 var (
@@ -38,10 +41,22 @@ func main() {
 	flag.BoolVar(&debug, "d", false, "print debug logs")
 	flag.Parse()
 
-	tp, err := tracerProvider("http://simplest-collector.default.svc.cluster.local:14268/api/traces")
-	if err != nil {
-		log.Fatal(err)
-	}
+	ctx := context.Background()
+	tp := initTracerProvider(ctx, otplEP)
+	defer func() {
+		if err := tp.Shutdown(ctx); err != nil {
+			log.Errorf("Error shutting down tracer provider: %v", err)
+		}
+	}()
+
+	mp := initMeterProvider(ctx, otplEP)
+	defer func() {
+		if err := mp.Shutdown(ctx); err != nil {
+			log.Errorf("Error shutting down meter provider: %v", err)
+		}
+	}()
+
+	tracer = tp.Tracer(programName)
 
 	// Register our TracerProvider as the global so any imported
 	// instrumentation in the future will default to using it.

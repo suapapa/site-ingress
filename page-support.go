@@ -5,12 +5,12 @@ import (
 	"net/http"
 
 	"github.com/suapapa/site-ingress/ingress"
-	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/trace"
 )
 
 func supportHandler(w http.ResponseWriter, r *http.Request) {
-	_, span := otel.Tracer("").Start(r.Context(), "ingress-support-page")
-	defer span.End()
+	ctx := r.Context()
+	trace.SpanFromContext(ctx)
 
 	c := &PageContent{
 		Title: "💸 후원 💸",

@@ -3,12 +3,12 @@ package main
 import (
 	"net/http"
 
-	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/trace"
 )
 
 func rootHandler(w http.ResponseWriter, r *http.Request) {
-	_, span := otel.Tracer("").Start(r.Context(), "ingress-root-page")
-	defer span.End()
+	ctx := r.Context()
+	trace.SpanFromContext(ctx)
 
 	links, err := getLinks()
 	if err != nil {
