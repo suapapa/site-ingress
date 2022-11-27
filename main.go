@@ -49,12 +49,12 @@ func main() {
 		}
 	}()
 
-	mp := initMeterProvider(ctx, otplEP)
-	defer func() {
-		if err := mp.Shutdown(ctx); err != nil {
-			log.Errorf("Error shutting down meter provider: %v", err)
-		}
-	}()
+	// mp := initMeterProvider(ctx, otplEP)
+	// defer func() {
+	// 	if err := mp.Shutdown(ctx); err != nil {
+	// 		log.Errorf("Error shutting down meter provider: %v", err)
+	// 	}
+	// }()
 
 	tracer = tp.Tracer(programName)
 

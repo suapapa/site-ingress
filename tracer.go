@@ -49,6 +49,7 @@ func initTracerProvider(ctx context.Context, url string) *sdktrace.TracerProvide
 	exporter, err := otlptracegrpc.New(
 		ctx,
 		otlptracegrpc.WithEndpoint(url),
+		otlptracegrpc.WithInsecure(),
 	)
 	if err != nil {
 		log.Fatalf("new otlp trace grpc exporter failed: %v", err)
@@ -73,6 +74,7 @@ func initMeterProvider(ctx context.Context, url string) *sdkmetric.MeterProvider
 	exporter, err := otlpmetricgrpc.New(
 		ctx,
 		otlpmetricgrpc.WithEndpoint(url),
+		otlpmetricgrpc.WithInsecure(),
 	)
 	if err != nil {
 		log.Fatalf("new otlp metric grpc exporter failed: %v", err)
