@@ -2,14 +2,18 @@ package main
 
 import (
 	"context"
+	"os"
 
 	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/exporters/otlp/otlpmetric/otlpmetricgrpc"
 	"go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc"
 	"go.opentelemetry.io/otel/metric/global"
 	"go.opentelemetry.io/otel/propagation"
 	sdkmetric "go.opentelemetry.io/otel/sdk/metric"
+	"go.opentelemetry.io/otel/sdk/resource"
 	sdktrace "go.opentelemetry.io/otel/sdk/trace"
+	semconv "go.opentelemetry.io/otel/semconv/v1.4.0"
 	"go.opentelemetry.io/otel/trace"
 )
 
@@ -56,12 +60,13 @@ func initTracerProvider(ctx context.Context, url string) *sdktrace.TracerProvide
 	}
 	tp := sdktrace.NewTracerProvider(
 		sdktrace.WithBatcher(exporter),
-		// sdktrace.WithResource(resource.NewWithAttributes(
-		// 	semconv.SchemaURL,
-		// 	semconv.ServiceNameKey.String("homin-dev"),
-		// 	attribute.String("name", programName),
-		// 	attribute.String("ver", programVer),
-		// )),
+		sdktrace.WithResource(resource.NewWithAttributes(
+			semconv.SchemaURL,
+			semconv.ServiceNameKey.String("homin-dev"),
+			attribute.String("name", programName),
+			attribute.String("ver", programVer),
+			attribute.String("k8s-node", os.Getenv("K8S_NODE_NAME")),
+		)),
 	)
 	otel.SetTracerProvider(tp)
 	otel.SetTextMapPropagator(propagation.NewCompositeTextMapPropagator(propagation.TraceContext{}, propagation.Baggage{}))
