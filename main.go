@@ -1,22 +1,19 @@
 package main
 
 import (
-	"context"
 	"flag"
 	"fmt"
 	"net/http"
 	"os"
 	"os/signal"
 	"syscall"
-
-	"go.opentelemetry.io/otel"
 )
 
 const (
 	SSL_CERT_FILE = "/etc/letsencrypt/live/homin.dev/fullchain.pem"
 	SSL_KEY_FILE  = "/etc/letsencrypt/live/homin.dev/privkey.pem"
 
-	otplEP = "simplest-collector.default.svc.cluster.local:4317"
+	// otplEP = "simplest-collector.default.svc.cluster.local:4317"
 )
 
 var (
@@ -41,26 +38,26 @@ func main() {
 	flag.BoolVar(&debug, "d", false, "print debug logs")
 	flag.Parse()
 
-	ctx := context.Background()
-	tp := initTracerProvider(ctx, otplEP)
-	defer func() {
-		if err := tp.Shutdown(ctx); err != nil {
-			log.Errorf("Error shutting down tracer provider: %v", err)
-		}
-	}()
-
-	// mp := initMeterProvider(ctx, otplEP)
+	// ctx := context.Background()
+	// tp := initTracerProvider(ctx, otplEP)
 	// defer func() {
-	// 	if err := mp.Shutdown(ctx); err != nil {
-	// 		log.Errorf("Error shutting down meter provider: %v", err)
+	// 	if err := tp.Shutdown(ctx); err != nil {
+	// 		log.Errorf("Error shutting down tracer provider: %v", err)
 	// 	}
 	// }()
 
-	tracer = tp.Tracer(programName)
+	// // mp := initMeterProvider(ctx, otplEP)
+	// // defer func() {
+	// // 	if err := mp.Shutdown(ctx); err != nil {
+	// // 		log.Errorf("Error shutting down meter provider: %v", err)
+	// // 	}
+	// // }()
+
+	// tracer = tp.Tracer(programName)
 
 	// Register our TracerProvider as the global so any imported
 	// instrumentation in the future will default to using it.
-	otel.SetTracerProvider(tp)
+	// otel.SetTracerProvider(tp)
 
 	if urlPrefix[0] != '/' {
 		urlPrefix = "/" + urlPrefix

@@ -5,10 +5,9 @@ import (
 )
 
 func rootHandler(w http.ResponseWriter, r *http.Request) {
-	ctx := r.Context()
-	_, span := tracer.Start(ctx, "root-handler")
-	defer span.End()
-	// trace.SpanFromContext(ctx)
+	// ctx := r.Context()
+	// _, span := tracer.Start(ctx, "root-handler")
+	// defer span.End()
 
 	links, err := getLinks()
 	if err != nil {

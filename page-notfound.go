@@ -7,9 +7,9 @@ import (
 )
 
 func notfoundHandler(w http.ResponseWriter, r *http.Request) {
-	ctx := r.Context()
-	_, span := tracer.Start(ctx, "notfound-handler")
-	defer span.End()
+	// ctx := r.Context()
+	// _, span := tracer.Start(ctx, "notfound-handler")
+	// defer span.End()
 
 	c := &PageContent{
 		Title: "🚧 404 🚧",

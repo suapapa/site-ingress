@@ -8,10 +8,9 @@ import (
 )
 
 func supportHandler(w http.ResponseWriter, r *http.Request) {
-	ctx := r.Context()
-	_, span := tracer.Start(ctx, "support-handler")
-	defer span.End()
-	// trace.SpanFromContext(ctx)
+	// ctx := r.Context()
+	// _, span := tracer.Start(ctx, "support-handler")
+	// defer span.End()
 
 	c := &PageContent{
 		Title: "💸 후원 💸",
