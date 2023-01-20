@@ -41,6 +41,7 @@ func initLogger() {
 	if err != nil {
 		panic(err)
 	}
+	fluentHook.SetMessageField("message")
 	fluentHook.SetLevels([]logrus.Level{
 		logrus.PanicLevel, logrus.FatalLevel, logrus.ErrorLevel, logrus.WarnLevel,
 		logrus.InfoLevel,
