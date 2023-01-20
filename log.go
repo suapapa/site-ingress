@@ -4,6 +4,7 @@ import (
 	"os"
 	"time"
 
+	"github.com/evalphobia/logrus_fluent"
 	"github.com/sirupsen/logrus"
 	prefixed "github.com/x-cray/logrus-prefixed-formatter"
 )
@@ -31,6 +32,21 @@ func initLogger() {
 		"program":  programName,
 		"ver":      programVer,
 	})
+
+	// fluent hook
+	fluentHook, err := logrus_fluent.NewWithConfig(logrus_fluent.Config{
+		Host: "fluent",
+		Port: 24224,
+	})
+	if err != nil {
+		panic(err)
+	}
+	fluentHook.SetLevels([]logrus.Level{
+		logrus.PanicLevel, logrus.FatalLevel, logrus.ErrorLevel, logrus.WarnLevel,
+		logrus.InfoLevel,
+	})
+	fluentHook.SetTag(programName)
+	logger.AddHook(fluentHook)
 }
 
 // log formatter to print log in KST timezone
