@@ -46,7 +46,7 @@ func initLogger() {
 		logrus.PanicLevel, logrus.FatalLevel, logrus.ErrorLevel, logrus.WarnLevel,
 		logrus.InfoLevel,
 	})
-	fluentHook.SetTag(programName)
+	fluentHook.SetTag("app." + programName)
 	logger.AddHook(fluentHook)
 }
 
