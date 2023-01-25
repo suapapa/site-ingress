@@ -27,9 +27,9 @@ var (
 )
 
 func main() {
-	log.Infof("homin.dev ingress start")
+	log.WithField("alert", "telegram").Infof("homin.dev ingress start")
 	defer func() {
-		log.Infof("homin.dev ingress stop")
+		log.WithField("alert", "telegram").Infof("homin.dev ingress stop")
 	}()
 
 	flag.StringVar(&urlPrefix, "p", "/ingress", "set url prefix")
