@@ -1,12 +1,16 @@
 package main
 
 import (
+	"context"
 	"flag"
 	"fmt"
 	"net/http"
 	"os"
 	"os/signal"
 	"syscall"
+
+	"github.com/fsnotify/fsnotify"
+	"github.com/suapapa/site-ingress/ingress"
 )
 
 const (
@@ -24,6 +28,8 @@ var (
 	httpPort  int
 	linksConf string
 	debug     bool
+
+	links []*ingress.Link
 )
 
 func main() {
@@ -59,6 +65,12 @@ func main() {
 	// instrumentation in the future will default to using it.
 	// otel.SetTracerProvider(tp)
 
+	var err error
+	if links, err = getLinks(linksConf); err != nil {
+		log.Fatalf("fail to read links conf: %v", err)
+		os.Exit(-1)
+	}
+
 	if urlPrefix[0] != '/' {
 		urlPrefix = "/" + urlPrefix
 	}
@@ -79,6 +91,37 @@ func main() {
 			log.Fatal(err)
 		}
 	}()
+
+	ctx := context.Background()
+	// watch lins conf file's chage
+	go func(ctx context.Context) {
+		fsW, err := fsnotify.NewWatcher()
+		if err != nil {
+			log.Errorf("fail to create fsnotify watcher: %v", err)
+			return
+		}
+
+		if err := fsW.Add(linksConf); err != nil {
+			log.Errorf("fail to add file to fsnotify watcher: %v", err)
+			return
+		}
+
+		for {
+			select {
+			case <-ctx.Done():
+				return
+			case event := <-fsW.Events:
+				if event.Op&fsnotify.Write == fsnotify.Write {
+					log.Infof("links conf file changed: %s", event.Name)
+					if links, err = getLinks(linksConf); err != nil {
+						log.Errorf("fail to read links conf: %v", err)
+					}
+				}
+			case err := <-fsW.Errors:
+				log.Errorf("fsnotify error: %v", err)
+			}
+		}
+	}(ctx)
 
 	c := make(chan os.Signal, 1)
 	signal.Notify(c, os.Interrupt, syscall.SIGTERM)

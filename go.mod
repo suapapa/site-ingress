@@ -4,6 +4,7 @@ go 1.19
 
 require (
 	github.com/evalphobia/logrus_fluent v0.5.4
+	github.com/fsnotify/fsnotify v1.6.0
 	github.com/pkg/errors v0.9.1
 	github.com/sirupsen/logrus v1.9.0
 	github.com/x-cray/logrus-prefixed-formatter v0.5.2
