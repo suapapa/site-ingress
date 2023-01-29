@@ -16,7 +16,7 @@ RUN strip /build/app
 RUN upx -q -9 /build/app
 
 # ---
-FROM scratch
+FROM alpine
 
 COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
 COPY --from=builder /build/app /bin/app
