@@ -3,8 +3,8 @@ package ingress
 import (
 	"os"
 
+	"github.com/goccy/go-yaml"
 	"github.com/pkg/errors"
-	"gopkg.in/yaml.v3"
 )
 
 type Link struct {

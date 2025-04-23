@@ -17,8 +17,28 @@
   <meta name="description" content="Homin.dev web sites">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link rel="stylesheet" href="https://homin.dev/asset/css/tachyons.min.css">
+  <meta name="color-scheme" content="light dark">
+  <style>
+    @media (prefers-color-scheme: dark) {
+      .text-dark-aware {
+        color: #f5f5f5 !important;
+      }
+      .bg-dark-aware {
+        background-color: #121212 !important;
+      }
+    }
+
+    @media (prefers-color-scheme: light) {
+      .text-dark-aware {
+        color: #000 !important;
+      }
+      .bg-dark-aware {
+        background-color: #fff !important;
+      }
+    }
+  </style>
 </head>
-<body class="tc">
+<body class="tc bg-dark-aware text-dark-aware">
 <h1 class="f1 lh-title">{{.Title}}</h1>
 <img src="{{.Img}}">
 
@@ -27,9 +47,9 @@
 <div class="flex flex-wrap justify-center pr4 pl4 pb4 items-start lh-copy">
 {{range .Links}}
   {{if not .Hide}}
-  <div class="bg-near-white w5 mw5 tl ma2 pa2 shadow-3">
+  <div class="bg-light-gray w5 mw5 tl ma2 pa2 shadow-3">
   <p class="f3 b pa0 ma0"><a href="{{.Link}}" class="link underline-hover dark-green hover-orange">{{.Name}}</a></p>
-  <p class="f6 pa0 ma0">{{.Desc}}</p>
+  <p class="f6 pa0 ma0 dark-green">{{.Desc}}</p>
   </div>
   {{end}}
 {{end}}
