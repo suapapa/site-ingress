@@ -10,7 +10,7 @@ func rootHandler(w http.ResponseWriter, r *http.Request) {
 	// defer span.End()
 
 	c := &PageContent{
-		Title:     "🔥 대문 🔥",
+		Title:     "🍀 HOMIN-DEV 🍀",
 		Img:       "https://homin.dev/asset/image/dungeon_01_360.jpg",
 		Msg:       randLine(),
 		Links:     links,

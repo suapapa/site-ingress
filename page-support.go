@@ -42,11 +42,11 @@ func supportHandler(w http.ResponseWriter, r *http.Request) {
 				Link: "https://qr.kakaopay.com/281006011000002416281797",
 				Desc: "카카오페이 실행 <- 모바일에서는 여기로",
 			},
-			{
-				Name: "/ingress",
-				Link: "https://homin.dev/",
-				Desc: "대문으로 이동",
-			},
+			// {
+			// 	Name: "/ingress",
+			// 	Link: "https://homin.dev",
+			// 	Desc: "대문으로 이동",
+			// },
 		},
 	}
 
