@@ -17,6 +17,10 @@
   reverse_proxy: true
   desc: 이것저것 해킹 블로그
 
+- name: /gh
+  link: https://github.com/suapapa
+  desc: 오픈소스 프로젝트
+
 - name: /wiki
   link: https://homin.dev/wiki/
   reverse_proxy_link: http://wiki.default.svc.cluster.local:8080
@@ -26,10 +30,6 @@
 - name: /yt
   link: https://www.youtube.com/c/HominLee
   desc: 취미 영상
-
-- name: /gh
-  link: https://github.com/suapapa
-  desc: 오픈소스 프로젝트
 
 
 # - name: /wiki
