@@ -75,7 +75,21 @@ func main() {
 		urlPrefix = "/" + urlPrefix
 	}
 
-	router := gin.Default()
+	// Set Gin to production mode
+	gin.SetMode(gin.ReleaseMode)
+	router := gin.New()
+
+	// Add essential middleware for production
+	router.Use(gin.Recovery()) // Panic recovery middleware
+
+	// Configure trusted proxies for Kubernetes network ranges
+	// These are the default CIDR ranges used in Kubernetes clusters
+	router.SetTrustedProxies([]string{
+		"10.0.0.0/8",     // Kubernetes cluster network
+		"172.16.0.0/12",  // Kubernetes cluster network
+		"192.168.0.0/16", // Kubernetes cluster network
+		"127.0.0.1",      // Localhost
+	})
 
 	if urlPrefix != "/" {
 		router.GET(urlPrefix+"/support", gin.WrapF(supportHandler))
