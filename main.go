@@ -112,7 +112,15 @@ func redirectHandler(c *gin.Context) {
 		return
 	}
 
+	if dest[0] == '/' {
+		dest = dest[1:]
+	}
+
 	for _, link := range links {
+		if link.Name[0] == '/' {
+			link.Name = link.Name[1:]
+		}
+
 		if link.Name == dest {
 			c.Redirect(http.StatusTemporaryRedirect, link.Link)
 			log.Printf("redirect %s -> %s", dest, link.Link)
