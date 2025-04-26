@@ -8,6 +8,8 @@ import (
 	"os/signal"
 	"syscall"
 
+	"github.com/gin-gonic/gin"
+
 	"github.com/suapapa/site-ingress/ingress"
 )
 
@@ -73,19 +75,23 @@ func main() {
 		urlPrefix = "/" + urlPrefix
 	}
 
+	router := gin.Default()
+
 	if urlPrefix != "/" {
-		http.HandleFunc(urlPrefix+"/support", supportHandler)
-		http.HandleFunc(urlPrefix+"/404", notfoundHandler)
-		http.HandleFunc(urlPrefix, rootHandler)
+		router.GET(urlPrefix+"/support", gin.WrapF(supportHandler))
+		router.GET(urlPrefix+"/404", gin.WrapF(notfoundHandler))
+		router.GET(urlPrefix, gin.WrapF(rootHandler))
+		router.GET(urlPrefix+"/:path", redirectHandler)
 	}
-	http.HandleFunc("/404", notfoundHandler)
-	http.HandleFunc("/support", supportHandler)
-	http.HandleFunc("/", rootHandler)
+	router.GET("/404", gin.WrapF(notfoundHandler))
+	router.GET("/support", gin.WrapF(supportHandler))
+	router.GET("/", gin.WrapF(rootHandler))
+	router.GET("/:path", redirectHandler)
 
 	// start HTTPServer
 	go func() {
 		log.Infof("listening http on :%d", httpPort)
-		if err := http.ListenAndServe(fmt.Sprintf(":%d", httpPort), nil); err != nil {
+		if err := router.Run(fmt.Sprintf(":%d", httpPort)); err != nil {
 			log.Fatal(err)
 		}
 	}()
@@ -93,4 +99,26 @@ func main() {
 	c := make(chan os.Signal, 1)
 	signal.Notify(c, os.Interrupt, syscall.SIGTERM)
 	<-c
+}
+
+func redirectHandler(c *gin.Context) {
+	dest := c.Param("path")
+	if dest == "" {
+		if urlPrefix != "" {
+			c.Redirect(http.StatusTemporaryRedirect, urlPrefix)
+		} else {
+			c.Redirect(http.StatusTemporaryRedirect, "/")
+		}
+		return
+	}
+
+	for _, link := range links {
+		if link.Name == dest {
+			c.Redirect(http.StatusTemporaryRedirect, link.Link)
+			log.Printf("redirect %s -> %s", dest, link.Link)
+			return
+		}
+	}
+
+	c.Redirect(http.StatusTemporaryRedirect, urlPrefix+"/404")
 }
