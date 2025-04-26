@@ -1,20 +1,19 @@
-- name: /resume
-  # link: https://suapapa.github.io/resume/
-  link: https://homin.dev/resume/
-  reverse_proxy_link: http://resume.default.svc.cluster.local:8080
-  reverse_proxy: true
-  desc: 온라인 이력서
-
 # - name: /
 #   link: https://homin.dev/ingress
 #   reverse_proxy_link: http://ingress.default.svc.cluster.local:8080
 #   reverse_proxy: true
 #   hide: true
 
+- name: /resume
+  link: https://homin.dev/resume/
+  reverse_proxy_link: http://resume.default.svc.cluster.local:8080
+  reverse_proxy: true
+  desc: 온라인 이력서
+
 - name: /blog
   link: https://homin.dev/blog
-  reverse_proxy_link: http://blog.default.svc.cluster.local:8080
-  reverse_proxy: true
+  # reverse_proxy_link: http://blog.default.svc.cluster.local:8080
+  # reverse_proxy: true
   desc: 이것저것 해킹 블로그
 
 - name: /gh
@@ -23,28 +22,28 @@
 
 - name: /wiki
   link: https://homin.dev/wiki/
-  reverse_proxy_link: http://wiki.default.svc.cluster.local:8080
-  reverse_proxy: true
+  # reverse_proxy_link: http://wiki.default.svc.cluster.local:8080
+  # reverse_proxy: true
   desc: Suapapa's Wiki (Archive at 2012)
 
 - name: /yt
   link: https://www.youtube.com/c/HominLee
   desc: 취미 영상
 
+- name: /fb
+  link: https://www.facebook.com/profile.php?id=100005792174163
+  desc: 페이스북
+  hide: true
 
-# - name: /wiki
-#   link: https://homin.dev/wiki/
-#   reverse_proxy_link: http://wiki.default.svc.cluster.local:8080
-#   reverse_proxy: true
-#   desc: Wiki (old archive)
+- name: /insta
+  link: https://www.instagram.com/homin1227/
+  desc: 일상 사진
+  hide: true
 
-# - name: /fb
-#   link: https://www.facebook.com/profile.php?id=100005792174163
-#   desc: 페이스북
-
-# - name: /insta
-#   link: https://www.instagram.com/homin1227/
-#   desc: 일상 사진
+- name: /li
+  link: https://www.linkedin.com/in/homin-lee-71311838/
+  desc: 링크드인
+  hide: true
 
 # - name: /gb
 #   link: https://homin.dev/gb

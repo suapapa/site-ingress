@@ -7,7 +7,6 @@
     window.dataLayer = window.dataLayer || [];
     function gtag(){dataLayer.push(arguments);}
     gtag('js', new Date());
-
     gtag('config', 'G-FVJYDM3VNX');
   </script>
   <meta charset="utf-8">
@@ -19,6 +18,11 @@
   <link rel="stylesheet" href="https://homin.dev/asset/css/tachyons.min.css">
   <meta name="color-scheme" content="light dark">
   <style>
+    :root {
+      --clover-green: #5BE584;
+      --clover-dark: #2E7D32;
+    }
+
     @media (prefers-color-scheme: dark) {
       .text-dark-aware {
         color: #f5f5f5 !important;
@@ -27,8 +31,14 @@
         background-color: #121212 !important;
       }
       .bg-light-gray {
-        background-color: #333 !important;  /* 혹은 원하는 어두운 톤 */
-        color: #f5f5f5;  /* 텍스트 대비 향상 */
+        background-color: #333 !important;
+        color: #f5f5f5;
+      }
+      .text-clover {
+        color: var(--clover-green) !important;
+      }
+      .text-muted {
+        color: #bbb !important;
       }
     }
 
@@ -39,43 +49,49 @@
       .bg-dark-aware {
         background-color: #fff !important;
       }
+      .text-clover {
+        color: var(--clover-dark) !important;
+      }
+      .text-muted {
+        color: #555 !important;
+      }
     }
   </style>
 </head>
 <body class="tc bg-dark-aware text-dark-aware">
-<h1 class="f1 lh-title">{{.Title}}</h1>
-<img src="{{.Img}}">
+  <h1 class="f1 lh-title">{{.Title}}</h1>
+  <img src="{{.Img}}">
 
-<p class="f3 fw3 pa3">{{.Msg}}</p>
+  <p class="f3 fw3 pa3">{{.Msg}}</p>
 
-<div class="flex flex-wrap justify-center pr4 pl4 pb4 items-start lh-copy">
-{{range .Links}}
-  {{if not .Hide}}
-  <div class="bg-light-gray w5 mw5 tl ma2 pa2 shadow-3">
-  <p class="f3 b pa0 ma0"><a href="{{.Link}}" class="link underline-hover dark-green hover-orange">{{.Name}}</a></p>
-  <p class="f6 pa0 ma0 dark-green">{{.Desc}}</p>
+  <div class="flex flex-wrap justify-center pr4 pl4 pb4 items-start lh-copy">
+    {{range .Links}}
+    {{if not .Hide}}
+    <div class="bg-light-gray w5 mw5 tl ma2 pa2 shadow-3">
+      <p class="f3 b pa0 ma0">
+        <a href="{{.Link}}" class="link underline-hover text-clover hover-orange">{{.Name}}</a>
+      </p>
+      <p class="f6 pa0 ma0 text-muted">{{.Desc}}</p>
+    </div>
+    {{end}}
+    {{end}}
   </div>
-  {{end}}
-{{end}}
-</div>
 
-<!-- <p class="f1"></p> -->
-<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9322146642801439"
-     crossorigin="anonymous"></script>
-<!-- homin-dev_ingress -->
-<ins class="adsbygoogle"
-     style="display:block"
-     data-ad-client="ca-pub-9322146642801439"
-     data-ad-slot="4074423172"
-     data-ad-format="auto"
-     data-full-width-responsive="true"></ins>
-<script>
-     (adsbygoogle = window.adsbygoogle || []).push({});
-</script>
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9322146642801439"
+          crossorigin="anonymous"></script>
+  <ins class="adsbygoogle"
+       style="display:block"
+       data-ad-client="ca-pub-9322146642801439"
+       data-ad-slot="4074423172"
+       data-ad-format="auto"
+       data-full-width-responsive="true"></ins>
+  <script>
+    (adsbygoogle = window.adsbygoogle || []).push({});
+  </script>
 
-<footer class="bottom-0 w-100 pa2">
-  <p class="ma0 f4">{{.LastWords}}</p>
-  <small>© Homin Lee &lt;ff4500@gmail.com&gt;; All rights reserved.</small>
-</footer>
+  <footer class="bottom-0 w-100 pa2">
+    <p class="ma0 f4">{{.LastWords}}</p>
+    <small>© Homin Lee &lt;ff4500@gmail.com&gt;; All rights reserved.</small>
+  </footer>
 </body>
 </html>
