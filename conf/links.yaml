@@ -8,27 +8,36 @@
   link: https://homin.dev/resume/
   reverse_proxy_link: http://resume.default.svc.cluster.local:8080
   reverse_proxy: true
-  desc: 온라인 이력서
+  desc: 📋 온라인 이력서
 
 - name: /blog
   link: https://homin.dev/blog
   # reverse_proxy_link: http://blog.default.svc.cluster.local:8080
   # reverse_proxy: true
-  desc: 이것저것 해킹 블로그
+  desc: 🛠️ 이것저것 해킹 블로그
 
 - name: /gh
   link: https://github.com/suapapa
-  desc: 오픈소스 프로젝트
+  desc: 🐙 오픈소스 프로젝트
 
 - name: /wiki
   link: https://homin.dev/wiki/
   # reverse_proxy_link: http://wiki.default.svc.cluster.local:8080
   # reverse_proxy: true
-  desc: Suapapa's Wiki (Archive at 2012)
+  desc: 🔒 Suapapa's Wiki (Archive at 2012)
+
+- name: /rb
+  link: https://www.redbubble.com/people/suapapa/shop?asc=u
+  desc: 🌠 스티커 판매
+
+- name: /support
+  link: https://homin.dev/ingress/support
+  desc: 🥩 사이트에 직접 도움을 주세요
 
 - name: /yt
   link: https://www.youtube.com/c/HominLee
   desc: 취미 영상
+  hide: true
 
 - name: /fb
   link: https://www.facebook.com/profile.php?id=100005792174163
@@ -50,16 +59,6 @@
 #   reverse_proxy_link: http://gb.default.svc.cluster.local:8080
 #   reverse_proxy: true
 #   desc: 방명록
-
-- name: /rb
-  link: https://www.redbubble.com/people/suapapa/shop?asc=u
-  desc: 레드버블 스토어
-
-- name: /support
-  link: https://homin.dev/ingress/support
-  reverse_proxy_link: http://ingress.default.svc.cluster.local:8080
-  reverse_proxy: true
-  desc: 대가없는 🥩 환영합니다
 
 # - name: /mqtt
 #   link: mosquitto.default.svc.cluster.local
