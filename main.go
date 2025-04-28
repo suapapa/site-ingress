@@ -9,6 +9,7 @@ import (
 	"syscall"
 
 	"github.com/gin-gonic/gin"
+	"github.com/snabb/sitemap"
 
 	"github.com/suapapa/site-ingress/ingress"
 )
@@ -95,11 +96,13 @@ func main() {
 		router.GET(urlPrefix+"/support", gin.WrapF(supportHandler))
 		router.GET(urlPrefix+"/404", gin.WrapF(notfoundHandler))
 		router.GET(urlPrefix, gin.WrapF(rootHandler))
+		router.GET(urlPrefix+"/sitemap.xml", sitemapHandler)
 		router.GET(urlPrefix+"/:path", redirectHandler)
 	}
 	router.GET("/404", gin.WrapF(notfoundHandler))
 	router.GET("/support", gin.WrapF(supportHandler))
 	router.GET("/", gin.WrapF(rootHandler))
+	router.GET("/sitemap.xml", sitemapHandler)
 	router.GET("/:path", redirectHandler)
 
 	// start HTTPServer
@@ -130,6 +133,16 @@ func redirectHandler(c *gin.Context) {
 		dest = dest[1:]
 	}
 
+	staticAssets := map[string]string{
+		"ads.txt":    "asset/ads.txt",
+		"robots.txt": "asset/robots.txt",
+	}
+
+	if asset, ok := staticAssets[dest]; ok {
+		c.File(asset)
+		return
+	}
+
 	for _, link := range links {
 		if link.Name[0] == '/' {
 			link.Name = link.Name[1:]
@@ -143,4 +156,18 @@ func redirectHandler(c *gin.Context) {
 	}
 
 	c.Redirect(http.StatusTemporaryRedirect, urlPrefix+"/404")
+}
+
+func sitemapHandler(c *gin.Context) {
+	sm := sitemap.New()
+
+	for _, link := range links {
+		if link.SiteMap {
+			sm.Add(&sitemap.URL{Loc: link.Link})
+		}
+	}
+
+	c.Header("Content-Type", "application/xml; charset=utf-8")
+	c.Status(http.StatusOK)
+	sm.WriteTo(c.Writer)
 }

@@ -23,6 +23,7 @@ WORKDIR /app
 
 COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
 COPY --from=builder /build/app .
+COPY ./asset asset
 COPY ./conf conf
 
 EXPOSE 8080

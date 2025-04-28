@@ -19,6 +19,8 @@ type Link struct {
 	PortFoward bool `yaml:"port_foward,omitempty"`
 	InPort     int  `yaml:"in_port,omitempty"`
 	OutPort    int  `yaml:"out_port,omitempty"`
+
+	SiteMap bool `yaml:"site_map,omitempty"`
 }
 
 func LoadLinksConf(path string) ([]*Link, error) {

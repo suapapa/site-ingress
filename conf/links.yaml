@@ -9,12 +9,14 @@
   reverse_proxy_link: http://resume.default.svc.cluster.local:8080
   reverse_proxy: true
   desc: 📋 온라인 이력서
+  site_map: true
 
 - name: /blog
-  link: https://homin.dev/blog
+  link: https://homin.dev/blog/
   # reverse_proxy_link: http://blog.default.svc.cluster.local:8080
   # reverse_proxy: true
   desc: 🛠️ 이것저것 해킹 블로그
+  site_map: true
 
 - name: /gh
   link: https://github.com/suapapa
@@ -25,6 +27,7 @@
   # reverse_proxy_link: http://wiki.default.svc.cluster.local:8080
   # reverse_proxy: true
   desc: 🔒 Suapapa's Wiki (Archive at 2012)
+  site_map: true
 
 - name: /rb
   link: https://www.redbubble.com/people/suapapa/shop?asc=u
