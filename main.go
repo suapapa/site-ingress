@@ -144,6 +144,10 @@ func redirectHandler(c *gin.Context) {
 	}
 
 	for _, link := range links {
+		if link == nil {
+			continue
+		}
+
 		if link.Name[0] == '/' {
 			link.Name = link.Name[1:]
 		}

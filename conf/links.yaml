@@ -29,13 +29,13 @@
   desc: 🔒 Suapapa's Wiki (Archive at 2012)
   site_map: true
 
-- name: /rb
-  link: https://www.redbubble.com/people/suapapa/shop?asc=u
-  desc: 🌠 스티커 판매
+# - name: /rb
+#   link: https://www.redbubble.com/people/suapapa/shop?asc=u
+#   desc: 🌠 스티커 판매
 
 - name: /support
   link: https://homin.dev/ingress/support
-  desc: 🥩 사이트에 직접 도움을 주세요
+  desc: 🥩 사이트에 도움을 주세요
 
 - name: /yt
   link: https://www.youtube.com/c/HominLee

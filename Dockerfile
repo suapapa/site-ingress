@@ -19,9 +19,9 @@ RUN go build -ldflags "-X main.programVer=${PROGRAM_VER}" -o app
 
 FROM scratch
 
-WORKDIR /app
-
 COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
+
+WORKDIR /app
 COPY --from=builder /build/app .
 COPY ./asset asset
 COPY ./conf conf
