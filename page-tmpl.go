@@ -8,7 +8,7 @@ import (
 )
 
 var (
-	//go:embed tmpl/page.tmpl
+	//go:embed tmpl/page.tmpl.html
 	tmplPageStr string
 	tmplPage    *template.Template
 )
