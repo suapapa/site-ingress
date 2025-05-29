@@ -39,7 +39,7 @@ func main() {
 		log.WithField("alert", "telegram").Infof("homin.dev ingress stop")
 	}()
 
-	flag.StringVar(&urlPrefix, "p", "/ingress", "set url prefix")
+	flag.StringVar(&urlPrefix, "p", "", "set url prefix") // /ingress
 	flag.IntVar(&httpPort, "http", 8080, "set http port")
 	flag.StringVar(&linksConf, "c", "conf/links.yaml", "links")
 	flag.BoolVar(&debug, "d", false, "print debug logs")
@@ -72,8 +72,10 @@ func main() {
 		os.Exit(-1)
 	}
 
-	if urlPrefix[0] != '/' {
+	if len(urlPrefix) > 0 && urlPrefix[0] != '/' {
 		urlPrefix = "/" + urlPrefix
+	} else if urlPrefix == "" {
+		urlPrefix = "/"
 	}
 
 	// Set Gin to production mode
@@ -101,9 +103,9 @@ func main() {
 	}
 	router.GET("/404", gin.WrapF(notfoundHandler))
 	router.GET("/support", gin.WrapF(supportHandler))
-	router.GET("/", gin.WrapF(rootHandler))
 	router.GET("/sitemap.xml", sitemapHandler)
 	router.GET("/:path", redirectHandler)
+	router.GET("/", gin.WrapF(rootHandler))
 
 	// start HTTPServer
 	go func() {
@@ -153,8 +155,15 @@ func redirectHandler(c *gin.Context) {
 		}
 
 		if link.Name == dest {
-			c.Redirect(http.StatusTemporaryRedirect, link.Link)
+			// if link.RPLink != "" {
+			// 	urlPath := c.Request.URL.Path
+			// 	log.Printf("reverse proxy %s -> %s", urlPath, link.RPLink)
+			// 	serveReverseProxy(c.Request.Context(), c.Writer, c.Request, link.RPLink, urlPath)
+			// 	// serveReverseProxy(c.Request.Context(), c.Writer, c.Request, link.Link, link.RPLink)
+			// } else {
 			log.Printf("redirect %s -> %s", dest, link.Link)
+			c.Redirect(http.StatusTemporaryRedirect, link.Link)
+			// }
 			return
 		}
 	}

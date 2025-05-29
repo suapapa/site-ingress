@@ -71,7 +71,7 @@
 #   hide: true
 
 # - name: /asset
-#   link: https://homin.dev/asset
+#   link: https://asset.homin.dev
 #   reverse_proxy_link: http://asset.default.svc.cluster.local:8080
 #   reverse_proxy: true
 #   hide: true
