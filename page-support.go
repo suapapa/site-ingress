@@ -14,7 +14,7 @@ func supportHandler(w http.ResponseWriter, r *http.Request) {
 
 	c := &PageContent{
 		Title: "💸 후원 💸",
-		Img:   "https://asset.homin.dev/image/flex_01_360.jpg",
+		Img:   "https://asset.homin.dev/image/flex_01_360.webp",
 		Msg:   "사이트를 후원해 주세요",
 		Links: []*ingress.Link{
 			{
@@ -34,7 +34,7 @@ func supportHandler(w http.ResponseWriter, r *http.Request) {
 			},
 			{
 				Name: "KakaoPay QR",
-				Link: "https://asset.homin.dev/image/kakaopay.jpg",
+				Link: "https://asset.homin.dev/image/kakaopay.webp",
 				Desc: "카카오페이 QR <- 데스크탑에서는 여기로",
 			},
 			{

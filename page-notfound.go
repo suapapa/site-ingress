@@ -14,7 +14,7 @@ func notfoundHandler(w http.ResponseWriter, r *http.Request) {
 
 	c := &PageContent{
 		Title: "🚧 404 🚧",
-		Img:   "https://asset.homin.dev/image/panic_01_360.jpg",
+		Img:   "https://asset.homin.dev/image/panic_01_360.webp",
 		Msg:   "이 산이 아닌갑다",
 		Links: []*ingress.Link{
 			{
