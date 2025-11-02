@@ -136,7 +136,7 @@ func redirectHandler(c *gin.Context) {
 	}
 
 	staticAssets := map[string]string{
-		"ads.txt":    "asset/ads.txt",
+		// "ads.txt":    "asset/ads.txt",
 		"robots.txt": "asset/robots.txt",
 	}
 
