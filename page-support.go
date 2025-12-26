@@ -18,6 +18,11 @@ func supportHandler(w http.ResponseWriter, r *http.Request) {
 		Msg:   "사이트를 후원해 주세요",
 		Links: []*ingress.Link{
 			{
+				Name: "Github Sponsor",
+				Link: "https://github.com/sponsors/suapapa",
+				Desc: "🐟🥮 붕어빵 지원",
+			},
+			{
 				Name: "REDBUBBLE",
 				Link: "https://www.redbubble.com/people/suapapa/shop?asc=u",
 				Desc: "🎁 굳즈샾 🎁",
