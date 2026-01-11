@@ -200,7 +200,7 @@ if (!showGophersOnly) app.appendChild(toggleBtn);
 const footer = document.createElement('div');
 footer.className = 'site-footer';
 footer.innerHTML = "&copy; Homin Lee &lt;homin.crc@gmail.com&gt; All rights reserved.<br>The Go gopher was designed by Renee French.";
-if (!showGophersOnly) app.appendChild(footer);
+app.appendChild(footer);
 
 let is3DEnabled = true;
 
