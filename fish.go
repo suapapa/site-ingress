@@ -57,3 +57,8 @@ func randLine() string {
 	i := r.Intn(len(movieLines))
 	return movieLines[i].String()
 }
+
+func GetRandomMovieLine() *MovieLine {
+	i := r.Intn(len(movieLines))
+	return movieLines[i]
+}

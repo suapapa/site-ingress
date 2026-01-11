@@ -45,27 +45,6 @@ func main() {
 	flag.BoolVar(&debug, "d", false, "print debug logs")
 	flag.Parse()
 
-	// ctx := context.Background()
-	// tp := initTracerProvider(ctx, otplEP)
-	// defer func() {
-	// 	if err := tp.Shutdown(ctx); err != nil {
-	// 		log.Errorf("Error shutting down tracer provider: %v", err)
-	// 	}
-	// }()
-
-	// // mp := initMeterProvider(ctx, otplEP)
-	// // defer func() {
-	// // 	if err := mp.Shutdown(ctx); err != nil {
-	// // 		log.Errorf("Error shutting down meter provider: %v", err)
-	// // 	}
-	// // }()
-
-	// tracer = tp.Tracer(programName)
-
-	// Register our TracerProvider as the global so any imported
-	// instrumentation in the future will default to using it.
-	// otel.SetTracerProvider(tp)
-
 	var err error
 	if links, err = getLinks(linksConf); err != nil {
 		log.Fatalf("fail to read links conf: %v", err)
@@ -86,7 +65,6 @@ func main() {
 	router.Use(gin.Recovery()) // Panic recovery middleware
 
 	// Configure trusted proxies for Kubernetes network ranges
-	// These are the default CIDR ranges used in Kubernetes clusters
 	router.SetTrustedProxies([]string{
 		"10.0.0.0/8",     // Kubernetes cluster network
 		"172.16.0.0/12",  // Kubernetes cluster network
@@ -94,18 +72,43 @@ func main() {
 		"127.0.0.1",      // Localhost
 	})
 
+	// API
+	router.GET("/api/links", func(c *gin.Context) {
+		showHides := c.Query("show_hides") == "true"
+		var resp []*ingress.Link
+		for _, l := range links {
+			if !l.Hide || showHides {
+				resp = append(resp, l)
+			}
+		}
+		c.JSON(http.StatusOK, resp)
+	})
+
+	router.GET("/api/fish", func(c *gin.Context) {
+		c.JSON(http.StatusOK, GetRandomMovieLine())
+	})
+
+	// Static files (Frontend)
+	router.Static("/assets", "./frontend/dist/assets")
+	router.StaticFile("/", "./frontend/dist/index.html")
+	router.Static("/model", "./frontend/dist/model") // Serve model assets if they are in dist/model
+
+	// 3D Assets (if not in dist) - Fallback or direct serve if needed
+	// But since we built it, they should be in dist if they were in public.
+	// We symlinked asset/go-gopher-model to frontend/public/model.
+	// So vite build copied them to frontend/dist/model.
+
 	if urlPrefix != "/" {
-		router.GET(urlPrefix+"/support", gin.WrapF(supportHandler))
-		router.GET(urlPrefix+"/404", gin.WrapF(notfoundHandler))
-		router.GET(urlPrefix, gin.WrapF(rootHandler))
-		router.GET(urlPrefix+"/sitemap.xml", sitemapHandler)
-		router.GET(urlPrefix+"/:path", redirectHandler)
+		// Handle prefix if necessary, but for now assuming root structure
+		router.GET(urlPrefix+"/api/links", func(c *gin.Context) {
+			c.JSON(http.StatusOK, links)
+		})
+		router.Static(urlPrefix+"/assets", "./frontend/dist/assets")
+		router.StaticFile(urlPrefix+"/", "./frontend/dist/index.html")
 	}
-	router.GET("/404", gin.WrapF(notfoundHandler))
-	router.GET("/support", gin.WrapF(supportHandler))
-	router.GET("/sitemap.xml", sitemapHandler)
+
+	// Old redirects handling
 	router.GET("/:path", redirectHandler)
-	router.GET("/", gin.WrapF(rootHandler))
 
 	// start HTTPServer
 	go func() {

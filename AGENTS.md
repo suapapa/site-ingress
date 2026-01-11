@@ -29,13 +29,17 @@ Transform the current Server-Side Rendered (SSR) Go application into a Client-Si
     -   Remove existing SSR templates (`tmpl/page.tmpl.html`) and associated logic (`page-root.go`).
 
 ### 3. Implementation Steps
-1.  Initialize frontend project in `frontend/`.
-2.  Install Three.js: `npm install three`.
-3.  Develop the 3D scene and logic in `frontend/src/main.js`.
-4.  Implement the link fetcher and UI.
-5.  Update `main.go` to expose the API and serve static files.
+1.  [x] Initialize frontend project in `frontend/`.
+2.  [x] Install Three.js: `npm install three`.
+3.  [x] Develop the 3D scene and logic in `frontend/src/main.js`.
+4.  [x] Implement the link fetcher and UI.
+5.  [x] Update `main.go` to expose the API and serve static files.
 6.  Verify the integration.
 
 ## Usage
 - **Development**: Run `npm run dev` in `frontend/` for frontend dev. Run `go run .` for backend.
 - **Production**: Build frontend (`npm run build`), then run Go server.
+
+## Documentation Maintenance
+- **Continuous Updates**: As the project evolves, strictly maintain `GEMINI.md` and `README.md` to reflect the current state, architectural decisions, and usage instructions.
+- **Status Tracking**: Update the "Implementation Steps" in `GEMINI.md` to mark tasks as completed (e.g., [x]) as you progress.
