@@ -271,8 +271,8 @@ function renderLinks(links) {
     card.className = 'link-card';
     card.target = "_blank";
     card.innerHTML = `
-            <span>${link.Name}</span>
-            <span class="link-desc">${link.Desc || ''}</span>
+            <span>${link.Desc || link.Name}</span>
+            <span class="link-sub">${link.Name}</span>
         `;
     linksContainer.appendChild(card);
   });

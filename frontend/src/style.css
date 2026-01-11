@@ -109,11 +109,17 @@ canvas {
     box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
 }
 
-.link-desc {
+.link-sub {
     font-size: 0.8rem;
     font-weight: normal;
     margin-top: 0.5rem;
     opacity: 0.8;
+}
+
+@media (max-width: 600px) {
+    .link-sub {
+        display: none;
+    }
 }
 
 .site-header {
