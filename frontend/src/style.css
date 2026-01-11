@@ -1,4 +1,14 @@
 :root {
+    box-sizing: border-box;
+}
+
+*,
+*::before,
+*::after {
+    box-sizing: inherit;
+}
+
+:root {
     font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
     line-height: 1.5;
     font-weight: 400;
@@ -121,6 +131,15 @@ canvas {
     border-radius: 99px;
     backdrop-filter: blur(4px);
     border: 1px solid rgba(255, 255, 255, 0.1);
+    white-space: nowrap;
+    /* Prevent wrapping */
+}
+
+@media (max-width: 600px) {
+    .site-header {
+        font-size: 1.5rem;
+        padding: 0.5rem 1rem;
+    }
 }
 
 .site-footer {
@@ -149,6 +168,10 @@ canvas {
     backdrop-filter: blur(4px);
 }
 
+.fish-container:empty {
+    display: none;
+}
+
 .fish-line {
     font-size: 1.1rem;
     font-weight: 500;
@@ -165,8 +188,8 @@ canvas {
 .toggle-3d-btn {
     pointer-events: auto;
     position: fixed;
-    top: 20px;
-    right: 20px;
+    top: calc(5vh + 0.5rem);
+    right: 3vw;
     background: rgba(255, 255, 255, 0.1);
     border: 1px solid rgba(255, 255, 255, 0.3);
     border-radius: 50%;
@@ -196,4 +219,11 @@ canvas {
 .toggle-3d-btn.off {
     opacity: 0.5;
     background: rgba(0, 0, 0, 0.2);
+}
+
+@media (max-height: 700px),
+(max-width: 600px) {
+    .fish-container {
+        display: none;
+    }
 }
