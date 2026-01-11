@@ -89,9 +89,14 @@ func main() {
 	})
 
 	// Static files (Frontend)
-	router.Static("/assets", "./frontend/dist/assets")
-	router.StaticFile("/", "./frontend/dist/index.html")
-	router.Static("/model", "./frontend/dist/model") // Serve model assets if they are in dist/model
+	// Static files (Frontend)
+	if _, err := os.Stat("./frontend/dist"); err == nil {
+		router.Static("/assets", "./frontend/dist/assets")
+		router.StaticFile("/", "./frontend/dist/index.html")
+		router.Static("/model", "./frontend/dist/model") // Serve model assets if they are in dist/model
+	} else {
+		log.Warn("frontend/dist not found, skipping static file serving")
+	}
 
 	// 3D Assets (if not in dist) - Fallback or direct serve if needed
 	// But since we built it, they should be in dist if they were in public.

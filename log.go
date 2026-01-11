@@ -18,7 +18,7 @@ func init() {
 
 func initLogger() {
 	logger := &logrus.Logger{
-		Out:       os.Stderr,
+		Out:       os.Stdout,
 		Level:     logrus.InfoLevel,
 		Hooks:     make(logrus.LevelHooks),
 		Formatter: newLogFormatter(),

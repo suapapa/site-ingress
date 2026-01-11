@@ -34,6 +34,14 @@ const groundPlane = new THREE.Mesh(planeGeometry, planeMaterial);
 groundPlane.rotation.x = -Math.PI / 2;
 scene.add(groundPlane);
 
+// Visual Floor: Infinite Grid
+const gridSize = 100;
+const gridDivisions = 50;
+const colorCenterLine = 0x00AAAA; // Cyan center
+const colorGrid = 0x353535;      // Subtle dark grey for the rest
+const gridHelper = new THREE.GridHelper(gridSize, gridDivisions, colorCenterLine, colorGrid);
+scene.add(gridHelper);
+
 // Toon Gradient Map (Cel Shading)
 function createGradientMap() {
   const format = THREE.RGBAFormat;
@@ -118,16 +126,12 @@ function spawnGopher() {
       child.material = child.material.clone();
       child.material.gradientMap = toonGradient;
 
-      const colors = [
-        0x00ADD8, // Gopher Blue
-        0xFFD700, // Gold
-        0xFF69B4, // Hot Pink
-        0x32CD32, // Lime Green
-        0xFF4500, // Orange Red
-        0x9370DB, // Medium Purple
-        0x00FFFF, // Cyan
-      ];
-      child.material.color.setHex(colors[Math.floor(Math.random() * colors.length)]);
+      // Generate vibrant HSL colors
+      const hue = Math.random();
+      const saturation = 0.8 + Math.random() * 0.2; // 80-100% Saturation for pop
+      const lightness = 0.5 + Math.random() * 0.1;  // 50-60% Lightness for depth
+
+      child.material.color.setHSL(hue, saturation, lightness);
     }
   });
 
@@ -170,20 +174,44 @@ header.className = 'site-header';
 header.innerText = "🍀 HOMIN-DEV 🍀";
 app.appendChild(header);
 
+const centerContent = document.createElement('div');
+centerContent.className = 'center-content';
+app.appendChild(centerContent);
+
 const linksContainer = document.createElement('div');
 linksContainer.className = 'links-container';
-app.appendChild(linksContainer);
+centerContent.appendChild(linksContainer);
 
 // Fish (Movie Line) Container
 const fishContainer = document.createElement('div');
 fishContainer.className = 'fish-container';
-app.appendChild(fishContainer);
+centerContent.appendChild(fishContainer);
 
 // Footer
 const footer = document.createElement('div');
 footer.className = 'site-footer';
 footer.innerHTML = "&copy; Homin Lee &lt;homin.crc@gmail.com&gt; All rights reserved.";
 app.appendChild(footer);
+
+// 3D Toggle Button
+const toggleBtn = document.createElement('div');
+toggleBtn.className = 'toggle-3d-btn';
+toggleBtn.innerHTML = '🧊'; // Cube emoji
+toggleBtn.title = "Toggle 3D Gophers";
+app.appendChild(toggleBtn);
+
+let is3DEnabled = true;
+
+toggleBtn.addEventListener('click', () => {
+  is3DEnabled = !is3DEnabled;
+  if (is3DEnabled) {
+    renderer.domElement.style.display = 'block';
+    toggleBtn.classList.remove('off');
+  } else {
+    renderer.domElement.style.display = 'none';
+    toggleBtn.classList.add('off');
+  }
+});
 
 // Links Fetcher
 const fetchLinks = async () => {
@@ -262,6 +290,8 @@ window.addEventListener('resize', () => {
 function animate() {
   requestAnimationFrame(animate);
 
+  if (!is3DEnabled) return;
+
   // Raycast to find mouse position on ground
   raycaster.setFromCamera(mouse, camera);
   const intersects = raycaster.intersectObject(groundPlane);
@@ -290,7 +320,7 @@ function animate() {
         diff.normalize();
 
         // Use individual speed stat as acceleration factor
-        const accel = g.speed * 0.5;
+        const accel = g.speed * 0.5 * (1 / 3); // Reduced to 1/3 speed
         g.velocity.add(diff.multiplyScalar(accel));
       } else {
         // Slowing down at target (Arrival behavior)
