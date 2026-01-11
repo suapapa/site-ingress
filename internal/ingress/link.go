@@ -2,7 +2,6 @@ package ingress
 
 import (
 	"fmt"
-	"log"
 	"os"
 
 	"github.com/goccy/go-yaml"
@@ -43,9 +42,6 @@ type Link struct {
 }
 
 func LoadSiteFromFile(path string) (*Site, error) {
-
-	log.Println("path:", path)
-
 	f, err := os.Open(path)
 	if err != nil {
 		return nil, errors.Wrap(err, "fail to load site conf")
@@ -56,8 +52,6 @@ func LoadSiteFromFile(path string) (*Site, error) {
 	if err != nil {
 		return nil, errors.Wrap(err, "fail to load site conf")
 	}
-
-	log.Println("ret:", ret)
 
 	return ret, nil
 }

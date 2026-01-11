@@ -174,6 +174,10 @@ const showGophersOnly = urlParams.get('show_gophers_only') === 'true';
 const header = document.createElement('div');
 header.className = 'site-header';
 header.innerText = "🍀 HOMIN-DEV 🍀";
+header.style.cursor = 'pointer';
+header.addEventListener('click', () => {
+  window.location.href = '/';
+});
 if (!showGophersOnly) app.appendChild(header);
 
 const centerContent = document.createElement('div');
@@ -271,7 +275,7 @@ function renderLinks(links) {
     const card = document.createElement('a');
     card.href = link.Link;
     card.className = 'link-card';
-    card.target = "_blank";
+
     card.innerHTML = `
             <span>${link.Desc || link.Name}</span>
             <span class="link-sub">${link.Name}</span>

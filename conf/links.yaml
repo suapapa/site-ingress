@@ -1,11 +1,5 @@
 links:
   "/":
-    # - name: /
-    #   link: https://homin.dev/ingress
-    #   reverse_proxy_link: http://ingress.default.svc.cluster.local:8080
-    #   reverse_proxy: true
-    #   hide: true
-
     - name: /resume
       link: https://homin.dev/resume/
       desc: 📋 온라인 이력서
@@ -27,12 +21,6 @@ links:
     - name: /gh
       link: https://github.com/suapapa
       desc: 🐙 오픈소스 프로젝트
-
-    - name: /wiki
-      link: https://homin.dev/wiki/
-      desc: 🔒 Suapapa's Wiki (Archive at 2012)
-      site_map: true
-      hide: true
 
     - name: /apps
       link: https://apps.homin.dev
