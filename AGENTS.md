@@ -37,6 +37,7 @@ Transform the current Server-Side Rendered (SSR) Go application into a Client-Si
 4.  [x] Implement the link fetcher and UI.
 5.  [x] Update `main.go` to expose the API and serve static files.
 6.  Verify the integration.
+7.  [x] Optimize animation speed for high refresh rate displays (Delta Time implementation).
 
 ## Usage
 - **Development**: Run `npm run dev` in `frontend/` for frontend dev. Run `go run .` for backend.

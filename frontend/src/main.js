@@ -294,8 +294,13 @@ window.addEventListener('resize', () => {
 });
 
 // Animation
+const clock = new THREE.Clock();
+
 function animate() {
   requestAnimationFrame(animate);
+
+  const delta = clock.getDelta();
+  const timeScale = Math.min(delta * 60, 2); // Normalize to 60fps, cap at 2x lag
 
   if (!is3DEnabled) return;
 
@@ -328,15 +333,16 @@ function animate() {
 
         // Use individual speed stat as acceleration factor
         const accel = g.speed * 0.5 * (1 / 3); // Reduced to 1/3 speed
-        g.velocity.add(diff.multiplyScalar(accel));
+        g.velocity.add(diff.multiplyScalar(accel * timeScale));
       } else {
         // Slowing down at target (Arrival behavior)
-        g.velocity.multiplyScalar(0.85);
+        // Lerp-like friction: v = v * pow(0.85, timeScale)
+        g.velocity.multiplyScalar(Math.pow(0.85, timeScale));
       }
     }
 
     // 2. Friction (Global damping)
-    g.velocity.multiplyScalar(0.92);
+    g.velocity.multiplyScalar(Math.pow(0.92, timeScale));
 
     // 3. Collision Resolution (Bounce)
     // Check against all others
@@ -360,7 +366,7 @@ function animate() {
         // This gives them a "velocity kick" outwards
         const kick = normal.multiplyScalar(repulsionStrength * (0.5 + overlap));
 
-        g.velocity.add(kick);
+        g.velocity.add(kick.multiplyScalar(timeScale));
       }
     });
 
@@ -368,7 +374,7 @@ function animate() {
     g.velocity.clampLength(0, 1.5);
 
     // 4. Update Position
-    g.pivot.position.add(g.velocity);
+    g.pivot.position.add(g.velocity.clone().multiplyScalar(timeScale));
 
     // 5. Update Visual Rotation
     const speed = g.velocity.length();
@@ -381,10 +387,10 @@ function animate() {
       let rotDiff = targetRotation - g.pivot.rotation.y;
       while (rotDiff > Math.PI) rotDiff -= Math.PI * 2;
       while (rotDiff < -Math.PI) rotDiff += Math.PI * 2;
-      g.pivot.rotation.y += rotDiff * 0.2;
+      g.pivot.rotation.y += rotDiff * 0.2 * timeScale;
 
       // Roll (X-axis) based on speed
-      g.visual.rotation.x += speed / 0.75;
+      g.visual.rotation.x += (speed * timeScale) / 0.75;
     } else {
       // Idle Animation
       g.visual.rotation.z = Math.sin(Date.now() * 0.005 + g.speed * 100) * 0.1;
