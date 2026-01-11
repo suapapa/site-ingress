@@ -27,6 +27,8 @@ Transform the current Server-Side Rendered (SSR) Go application into a Client-Si
     -   Serve 3D assets from `asset/`.
 - **Cleanup**:
     -   Remove existing SSR templates (`tmpl/page.tmpl.html`) and associated logic (`page-root.go`).
+- **Proxy Configuration**:
+    -   Configure Nginx (production) and Vite (dev) to proxy `/api/*` and short links (e.g., `/gh`) to the backend.
 
 ### 3. Implementation Steps
 1.  [x] Initialize frontend project in `frontend/`.

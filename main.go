@@ -6,12 +6,13 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"path"
 	"syscall"
 
 	"github.com/gin-gonic/gin"
 	"github.com/snabb/sitemap"
 
-	"github.com/suapapa/site-ingress/ingress"
+	"github.com/suapapa/site-ingress/internal/ingress"
 )
 
 const (
@@ -30,7 +31,7 @@ var (
 	linksConf string
 	debug     bool
 
-	links []*ingress.Link
+	siteLinks ingress.Links
 )
 
 func main() {
@@ -39,23 +40,24 @@ func main() {
 		log.WithField("alert", "telegram").Infof("homin.dev ingress stop")
 	}()
 
-	flag.StringVar(&urlPrefix, "p", "", "set url prefix") // /ingress
 	flag.IntVar(&httpPort, "http", 8080, "set http port")
 	flag.StringVar(&linksConf, "c", "conf/links.yaml", "links")
 	flag.BoolVar(&debug, "d", false, "print debug logs")
 	flag.Parse()
 
+	var site *ingress.Site
 	var err error
-	if links, err = getLinks(linksConf); err != nil {
+	if site, err = ingress.LoadSiteFromFile(linksConf); err != nil {
 		log.Fatalf("fail to read links conf: %v", err)
 		os.Exit(-1)
 	}
 
-	if len(urlPrefix) > 0 && urlPrefix[0] != '/' {
-		urlPrefix = "/" + urlPrefix
-	} else if urlPrefix == "" {
-		urlPrefix = "/"
+	if site == nil {
+		log.Fatalf("fail to read links conf: %v", err)
+		os.Exit(-1)
 	}
+	siteLinks = site.Links
+	says = site.Says
 
 	// Set Gin to production mode
 	gin.SetMode(gin.ReleaseMode)
@@ -75,8 +77,10 @@ func main() {
 	// API
 	router.GET("/api/links", func(c *gin.Context) {
 		showHides := c.Query("show_hides") == "true"
+		prefix := tidyPath(c.Query("prefix"))
+
 		var resp []*ingress.Link
-		for _, l := range links {
+		for _, l := range siteLinks[prefix] {
 			if !l.Hide || showHides {
 				resp = append(resp, l)
 			}
@@ -85,34 +89,10 @@ func main() {
 	})
 
 	router.GET("/api/fish", func(c *gin.Context) {
-		c.JSON(http.StatusOK, GetRandomMovieLine())
+		c.JSON(http.StatusOK, GetRandomSay())
 	})
-
-	// Static files (Frontend)
-	// Static files (Frontend)
-	if _, err := os.Stat("./frontend/dist"); err == nil {
-		router.Static("/assets", "./frontend/dist/assets")
-		router.StaticFile("/", "./frontend/dist/index.html")
-		router.Static("/model", "./frontend/dist/model") // Serve model assets if they are in dist/model
-	} else {
-		log.Warn("frontend/dist not found, skipping static file serving")
-	}
-
-	// 3D Assets (if not in dist) - Fallback or direct serve if needed
-	// But since we built it, they should be in dist if they were in public.
-	// We symlinked asset/go-gopher-model to frontend/public/model.
-	// So vite build copied them to frontend/dist/model.
-
-	if urlPrefix != "/" {
-		// Handle prefix if necessary, but for now assuming root structure
-		router.GET(urlPrefix+"/api/links", func(c *gin.Context) {
-			c.JSON(http.StatusOK, links)
-		})
-		router.Static(urlPrefix+"/assets", "./frontend/dist/assets")
-		router.StaticFile(urlPrefix+"/", "./frontend/dist/index.html")
-	}
-
-	// Old redirects handling
+	router.Static("/assets", "/assets")
+	router.GET("/sitemap.xml", sitemapHandler)
 	router.GET("/:path", redirectHandler)
 
 	// start HTTPServer
@@ -129,66 +109,66 @@ func main() {
 }
 
 func redirectHandler(c *gin.Context) {
-	dest := c.Param("path")
-	if dest == "" {
-		if urlPrefix != "" {
-			c.Redirect(http.StatusTemporaryRedirect, urlPrefix)
-		} else {
-			c.Redirect(http.StatusTemporaryRedirect, "/")
-		}
-		return
-	}
+	dest := tidyPath(c.Param("path"))
 
-	if dest[0] == '/' {
-		dest = dest[1:]
-	}
+	log.Infof("dest: %s", dest)
 
-	staticAssets := map[string]string{
-		// "ads.txt":    "asset/ads.txt",
-		"robots.txt": "asset/robots.txt",
-	}
+	urlPath := c.Request.URL.Path
+	log.Infof("redirect handler: %s", urlPath)
 
-	if asset, ok := staticAssets[dest]; ok {
-		c.File(asset)
-		return
-	}
+	// Search in root links
+	for prefix, links := range siteLinks {
+		for _, link := range links {
+			if link == nil {
+				continue
+			}
 
-	for _, link := range links {
-		if link == nil {
-			continue
-		}
-
-		if link.Name[0] == '/' {
-			link.Name = link.Name[1:]
-		}
-
-		if link.Name == dest {
-			// if link.RPLink != "" {
-			// 	urlPath := c.Request.URL.Path
-			// 	log.Printf("reverse proxy %s -> %s", urlPath, link.RPLink)
-			// 	serveReverseProxy(c.Request.Context(), c.Writer, c.Request, link.RPLink, urlPath)
-			// 	// serveReverseProxy(c.Request.Context(), c.Writer, c.Request, link.Link, link.RPLink)
-			// } else {
-			log.Printf("redirect %s -> %s", dest, link.Link)
-			c.Redirect(http.StatusTemporaryRedirect, link.Link)
+			// Normalize link name
+			// itemName := link.Name
+			// if itemName != "" && itemName[0] == '/' {
+			// 	itemName = itemName[1:]
 			// }
-			return
+
+			// // Check match
+			if tidyPath(link.Name) == dest {
+				log.Printf("redirect %s -> %s", tidyPath(path.Join(prefix, dest)), link.Link)
+				c.Redirect(http.StatusTemporaryRedirect, link.Link)
+				return
+			}
 		}
 	}
 
-	c.Redirect(http.StatusTemporaryRedirect, urlPrefix+"/404")
+	c.AbortWithStatus(http.StatusNotFound)
 }
 
 func sitemapHandler(c *gin.Context) {
 	sm := sitemap.New()
 
-	for _, link := range links {
-		if link.SiteMap {
-			sm.Add(&sitemap.URL{Loc: link.Link})
+	for prefix, ls := range siteLinks {
+		for _, link := range ls {
+			if link.SiteMap {
+				sm.Add(&sitemap.URL{Loc: path.Join(prefix, link.Link)})
+			}
 		}
 	}
 
 	c.Header("Content-Type", "application/xml; charset=utf-8")
 	c.Status(http.StatusOK)
 	sm.WriteTo(c.Writer)
+}
+
+func tidyPath(p string) string {
+	if p == "" {
+		return "/"
+	}
+
+	if p[0] != '/' {
+		p = "/" + p
+	}
+
+	if p[len(p)-1] == '/' {
+		p = p[:len(p)-1]
+	}
+
+	return p
 }

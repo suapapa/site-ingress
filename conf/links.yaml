@@ -1,77 +1,128 @@
-# - name: /
-#   link: https://homin.dev/ingress
-#   reverse_proxy_link: http://ingress.default.svc.cluster.local:8080
-#   reverse_proxy: true
-#   hide: true
+links:
+  "/":
+    # - name: /
+    #   link: https://homin.dev/ingress
+    #   reverse_proxy_link: http://ingress.default.svc.cluster.local:8080
+    #   reverse_proxy: true
+    #   hide: true
 
-- name: /resume
-  link: https://homin.dev/resume/
-  reverse_proxy_link: http://resume.default.svc.cluster.local:8080
-  reverse_proxy: true
-  desc: 📋 온라인 이력서
-  site_map: true
+    - name: /resume
+      link: https://homin.dev/resume/
+      desc: 📋 온라인 이력서
+      site_map: true
 
-- name: /blog
-  link: https://homin.dev/blog/
-  # reverse_proxy_link: http://blog.default.svc.cluster.local:8080
-  # reverse_proxy: true
-  desc: 🛠️ 이것저것 해킹 블로그
-  site_map: true
+    - name: /li
+      link: https://www.linkedin.com/in/homin-lee-71311838/
+      desc: 🧑‍💻 링크드인
 
-- name: /gh
-  link: https://github.com/suapapa
-  desc: 🐙 오픈소스 프로젝트
+    - name: /yt
+      link: https://www.youtube.com/@hominlog
+      desc: 🍿 유튜브
 
-- name: /wiki
-  link: https://homin.dev/wiki/
-  # reverse_proxy_link: http://wiki.default.svc.cluster.local:8080
-  # reverse_proxy: true
-  desc: 🔒 Suapapa's Wiki (Archive at 2012)
-  site_map: true
+    - name: /blog
+      link: https://homin.dev/blog/
+      desc: 🛠️ 이것저것 해킹 블로그
+      site_map: true
 
-# - name: /rb
-#   link: https://www.redbubble.com/people/suapapa/shop?asc=u
-#   desc: 🌠 스티커 판매
+    - name: /gh
+      link: https://github.com/suapapa
+      desc: 🐙 오픈소스 프로젝트
 
-- name: /support
-  link: https://homin.dev/ingress/support
-  desc: 🥩 사이트에 도움을 주세요
+    - name: /wiki
+      link: https://homin.dev/wiki/
+      desc: 🔒 Suapapa's Wiki (Archive at 2012)
+      site_map: true
+      hide: true
 
-- name: /yt
-  link: https://www.youtube.com/c/HominLee
-  desc: 취미 영상
-  hide: true
+    - name: /apps
+      link: https://apps.homin.dev
+      desc: 📱 iOS/Android 앱
 
-- name: /fb
-  link: https://www.facebook.com/profile.php?id=100005792174163
-  desc: 페이스북
-  hide: true
+    - name: /support
+      link: https://homin.dev/support
+      desc: 🥩 사이트에 도움을 주세요
 
-- name: /insta
-  link: https://www.instagram.com/homin1227/
-  desc: 일상 사진
-  hide: true
+    - name: /fb
+      link: https://www.facebook.com/profile.php?id=100005792174163
+      desc: 페이스북
+      hide: true
 
-- name: /li
-  link: https://www.linkedin.com/in/homin-lee-71311838/
-  desc: 링크드인
-  hide: true
+    - name: /insta
+      link: https://www.instagram.com/homin1227/
+      desc: 일상 사진
+      hide: true
 
-# - name: /gb
-#   link: https://homin.dev/gb
-#   reverse_proxy_link: http://gb.default.svc.cluster.local:8080
-#   reverse_proxy: true
-#   desc: 방명록
+    - name: /x
+      link: https://x.com/suapapa
+      desc: 구. 트위터
+      hide: true
 
-# - name: /mqtt
-#   link: mosquitto.default.svc.cluster.local
-#   port_foward: true
-#   in_port: 9001
-#   out_port: 9001
-#   hide: true
+    - name: /rb
+      link: https://www.redbubble.com/people/suapapa/shop?asc=u
+      desc: 🌠 스티커 판매
+      hide: true
 
-# - name: /asset
-#   link: https://asset.homin.dev
-#   reverse_proxy_link: http://asset.default.svc.cluster.local:8080
-#   reverse_proxy: true
-#   hide: true
+    # - name: /gb
+    #   link: https://homin.dev/gb
+    #   reverse_proxy_link: http://gb.default.svc.cluster.local:8080
+    #   reverse_proxy: true
+    #   desc: 방명록
+
+    # - name: /mqtt
+    #   link: mosquitto.default.svc.cluster.local
+    #   port_foward: true
+    #   in_port: 9001
+    #   out_port: 9001
+    #   hide: true
+
+    # - name: /asset
+    #   link: https://homin.dev/asset
+    #   reverse_proxy_link: http://asset.default.svc.cluster.local:8080
+    #   reverse_proxy: true
+    #   hide: true
+
+
+  "/support":
+    - name: Github Sponsor
+      link: https://github.com/sponsors/suapapa
+      desc: 🐟🥮 붕어빵 지원
+
+    - name: REDBUBBLE
+      link: https://www.redbubble.com/people/suapapa/shop?asc=u
+      desc: 🎁 굳즈샾 🎁
+
+    - name: Buy Me a coffee
+      link: https://www.buymeacoffee.com/homin
+      desc: ☕️ 충전해주기
+
+    - name: Paypal
+      link: https://www.paypal.com/paypalme/suapapa
+      desc: 페이팔 송금
+
+    - name: KakaoPay QR
+      link: https://asset.homin.dev/image/kakaopay.webp
+      desc: 카카오페이 QR <- 데스크탑에서는 여기로
+
+    - name: KakaoPay
+      link: https://qr.kakaopay.com/281006011000002416281797
+      desc: 카카오페이 실행 <- 모바일에서는 여기로
+
+says:
+  - movie: "Matrix"
+    line: "Neo, sooner or later you’re going to realize, just as I did, that there’s a difference between knowing the path and walking the path."
+    character: "Morpheus"
+  - movie: "Forrest Gump"
+    line: "Life is like a box of chocolates. You never know what you're gonna get."
+    character: "Forrest Gump"
+  - movie: "Dune (2021)"
+    line: "A great man doesn't seek to lead, he's called to it."
+    character: "Leto"
+  - movie: "Interstella"
+    line: "We’ll find a way, we always have."
+    character: "Cooper"
+  - movie: "The Lord of the Rings: The Fellowship of the Ring"
+    line: "All we have to decide is what to do with the time that is given us."
+    character: "Gandalf"
+  - movie: "Star Wars: Episode V - The Empire Strikes Back"
+    line: "Do or do not. There is no try."
+    character: "Yoda"

@@ -214,9 +214,15 @@ toggleBtn.addEventListener('click', () => {
 });
 
 // Links Fetcher
+
 const fetchLinks = async () => {
   try {
-    const res = await fetch('/api/links');
+    let url = '/api/links';
+    if (window.location.pathname === '/support') {
+      url = '/api/links?prefix=support';
+    }
+
+    const res = await fetch(url);
     if (!res.ok) throw new Error('Failed to fetch');
     const data = await res.json();
     renderLinks(data);
@@ -231,6 +237,7 @@ const fetchLinks = async () => {
     renderLinks(mockData);
   }
 };
+
 
 const fetchFish = async () => {
   try {

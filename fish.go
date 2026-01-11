@@ -1,11 +1,10 @@
 package main
 
 import (
-	"fmt"
 	"math/rand"
 	"time"
 
-	"github.com/goccy/go-yaml"
+	"github.com/suapapa/site-ingress/internal/ingress"
 )
 
 const (
@@ -32,33 +31,15 @@ const (
 )
 
 var (
-	r          *rand.Rand
-	movieLines []*MovieLine
+	r    *rand.Rand
+	says []*ingress.Say
 )
 
 func init() {
 	r = rand.New(rand.NewSource(time.Now().UnixNano()))
-	if err := yaml.Unmarshal([]byte(movieLinesStr), &movieLines); err != nil {
-		panic(err)
-	}
 }
 
-type MovieLine struct {
-	Movie     string `yaml:"movie"`
-	Line      string `yaml:"line"`
-	Character string `yaml:"character"`
-}
-
-func (ml *MovieLine) String() string {
-	return fmt.Sprintf("“%s” - %s; %s", ml.Line, ml.Character, ml.Movie)
-}
-
-func randLine() string {
-	i := r.Intn(len(movieLines))
-	return movieLines[i].String()
-}
-
-func GetRandomMovieLine() *MovieLine {
-	i := r.Intn(len(movieLines))
-	return movieLines[i]
+func GetRandomSay() *ingress.Say {
+	i := r.Intn(len(says))
+	return says[i]
 }
