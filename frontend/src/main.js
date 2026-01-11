@@ -167,16 +167,18 @@ const targetPoint = new THREE.Vector3();
 
 // UI and Links
 const app = document.querySelector('#app');
+const urlParams = new URLSearchParams(window.location.search);
+const showGophersOnly = urlParams.get('show_gophers_only') === 'true';
 
 // Header
 const header = document.createElement('div');
 header.className = 'site-header';
 header.innerText = "🍀 HOMIN-DEV 🍀";
-app.appendChild(header);
+if (!showGophersOnly) app.appendChild(header);
 
 const centerContent = document.createElement('div');
 centerContent.className = 'center-content';
-app.appendChild(centerContent);
+if (!showGophersOnly) app.appendChild(centerContent);
 
 const linksContainer = document.createElement('div');
 linksContainer.className = 'links-container';
@@ -187,18 +189,18 @@ const fishContainer = document.createElement('div');
 fishContainer.className = 'fish-container';
 centerContent.appendChild(fishContainer);
 
-// Footer
-const footer = document.createElement('div');
-footer.className = 'site-footer';
-footer.innerHTML = "&copy; Homin Lee &lt;homin.crc@gmail.com&gt; All rights reserved.";
-app.appendChild(footer);
-
 // 3D Toggle Button
 const toggleBtn = document.createElement('div');
 toggleBtn.className = 'toggle-3d-btn';
 toggleBtn.innerHTML = '🧊'; // Cube emoji
 toggleBtn.title = "Toggle 3D Gophers";
-app.appendChild(toggleBtn);
+if (!showGophersOnly) app.appendChild(toggleBtn);
+
+// Footer
+const footer = document.createElement('div');
+footer.className = 'site-footer';
+footer.innerHTML = "&copy; Homin Lee &lt;homin.crc@gmail.com&gt; All rights reserved.<br>The Go gopher was designed by Renee French.";
+if (!showGophersOnly) app.appendChild(footer);
 
 let is3DEnabled = true;
 
@@ -278,8 +280,10 @@ function renderLinks(links) {
   });
 }
 
-fetchLinks();
-fetchFish();
+if (!showGophersOnly) {
+  fetchLinks();
+  fetchFish();
+}
 
 // Event listeners
 window.addEventListener('mousemove', (event) => {

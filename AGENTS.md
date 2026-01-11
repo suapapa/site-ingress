@@ -15,6 +15,7 @@ Transform the current Server-Side Rendered (SSR) Go application into a Client-Si
     -   Implement "Gophers following mouse" interaction.
     -   Fetch links from `/api/links`.
     -   Display links in a UI overlay (HTML/CSS).
+    -   Support `?show_gophers_only=true` to hide UI overlay.
 - **Aesthetics**:
     -   Vibrant, modern design.
     -   Glassmorphism for the link overlay.
