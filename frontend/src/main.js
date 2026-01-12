@@ -40,6 +40,51 @@ const gridDivisions = 50;
 const colorCenterLine = 0x00AAAA; // Cyan center
 const colorGrid = 0x353535;      // Subtle dark grey for the rest
 const gridHelper = new THREE.GridHelper(gridSize, gridDivisions, colorCenterLine, colorGrid);
+
+// Custom Shader for Glowing Grid Lines
+const gridVertexShader = `
+  varying vec3 vColor;
+  varying vec3 vWorldPosition;
+  void main() {
+    vColor = color; 
+    vec4 worldPosition = modelMatrix * vec4(position, 1.0);
+    vWorldPosition = worldPosition.xyz;
+    gl_Position = projectionMatrix * viewMatrix * worldPosition;
+  }
+`;
+
+const gridFragmentShader = `
+  uniform vec3 uCursor;
+  uniform float uRadius;
+  varying vec3 vColor;
+  varying vec3 vWorldPosition;
+  
+  void main() {
+    float dist = distance(vWorldPosition.xz, uCursor.xz);
+    // Glow intensity: 1.0 at center, fading out to 0.0 at uRadius
+    float intensity = 1.0 - smoothstep(0.0, uRadius, dist);
+    
+    // Additive Cyan Glow
+    vec3 glowColor = vec3(0.0, 1.0, 1.0);
+    // Brighter glow multiplier
+    vec3 finalColor = vColor + (glowColor * intensity * 0.8); 
+    
+    gl_FragColor = vec4(finalColor, 1.0);
+  }
+`;
+
+const gridMaterial = new THREE.ShaderMaterial({
+  vertexShader: gridVertexShader,
+  fragmentShader: gridFragmentShader,
+  vertexColors: true, // Enables 'color' attribute usage
+  uniforms: {
+    uCursor: { value: new THREE.Vector3(0, 0, 0) },
+    uRadius: { value: 10.0 } // Radius of the glow
+  },
+  transparent: true,
+});
+
+gridHelper.material = gridMaterial;
 scene.add(gridHelper);
 
 // Toon Gradient Map (Cel Shading)
@@ -193,12 +238,7 @@ const fishContainer = document.createElement('div');
 fishContainer.className = 'fish-container';
 centerContent.appendChild(fishContainer);
 
-// 3D Toggle Button
-const toggleBtn = document.createElement('div');
-toggleBtn.className = 'toggle-3d-btn';
-toggleBtn.innerHTML = '🧊'; // Cube emoji
-toggleBtn.title = "Toggle 3D Gophers";
-if (!showGophersOnly) app.appendChild(toggleBtn);
+
 
 // Footer
 const footer = document.createElement('div');
@@ -206,18 +246,7 @@ footer.className = 'site-footer';
 footer.innerHTML = "&copy; Homin Lee &lt;homin.crc@gmail.com&gt; All rights reserved.<br>The Go gopher was designed by Renee French.";
 app.appendChild(footer);
 
-let is3DEnabled = true;
 
-toggleBtn.addEventListener('click', () => {
-  is3DEnabled = !is3DEnabled;
-  if (is3DEnabled) {
-    renderer.domElement.style.display = 'block';
-    toggleBtn.classList.remove('off');
-  } else {
-    renderer.domElement.style.display = 'none';
-    toggleBtn.classList.add('off');
-  }
-});
 
 // Links Fetcher
 
@@ -301,6 +330,30 @@ window.addEventListener('resize', () => {
   renderer.setSize(window.innerWidth, window.innerHeight);
 });
 
+window.addEventListener('mousedown', () => {
+  raycaster.setFromCamera(mouse, camera);
+  const intersects = raycaster.intersectObject(groundPlane);
+
+  if (intersects.length > 0) {
+    const explosionPoint = intersects[0].point;
+    const explosionRadius = 15;
+    const explosionForce = 3.0; // Strong enough to hit the speed cap instantly
+
+    gophers.forEach(g => {
+      const diff = new THREE.Vector3().subVectors(g.pivot.position, explosionPoint);
+      diff.y = 0;
+      const dist = diff.length();
+
+      if (dist < explosionRadius) {
+        // Force decreases with distance
+        const strength = (1 - dist / explosionRadius) * explosionForce;
+        diff.normalize();
+        g.velocity.add(diff.multiplyScalar(strength));
+      }
+    });
+  }
+});
+
 // Animation
 const clock = new THREE.Clock();
 
@@ -310,8 +363,6 @@ function animate() {
   const delta = clock.getDelta();
   const timeScale = Math.min(delta * 60, 2); // Normalize to 60fps, cap at 2x lag
 
-  if (!is3DEnabled) return;
-
   // Raycast to find mouse position on ground
   raycaster.setFromCamera(mouse, camera);
   const intersects = raycaster.intersectObject(groundPlane);
@@ -320,6 +371,12 @@ function animate() {
   if (intersects.length > 0) {
     targetPoint.copy(intersects[0].point);
     hasTarget = true;
+
+    // Update Grid Glow Position
+    gridHelper.material.uniforms.uCursor.value.copy(targetPoint);
+  } else {
+    // Move glow off-screen if no intersection
+    gridHelper.material.uniforms.uCursor.value.set(1000, 1000, 1000);
   }
 
   const gopherRadius = 0.65;

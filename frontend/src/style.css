@@ -190,42 +190,7 @@ canvas {
     display: block;
 }
 
-/* 3D Toggle Button */
-.toggle-3d-btn {
-    pointer-events: auto;
-    position: fixed;
-    top: calc(5vh + 0.5rem);
-    right: 3vw;
-    background: rgba(255, 255, 255, 0.1);
-    border: 1px solid rgba(255, 255, 255, 0.3);
-    border-radius: 50%;
-    width: 48px;
-    height: 48px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    backdrop-filter: blur(10px);
-    transition: all 0.3s ease;
-    z-index: 100;
-    font-size: 1.5rem;
-    color: white;
-    user-select: none;
-}
 
-.toggle-3d-btn:hover {
-    background: rgba(255, 255, 255, 0.3);
-    transform: scale(1.1);
-}
-
-.toggle-3d-btn:active {
-    transform: scale(0.95);
-}
-
-.toggle-3d-btn.off {
-    opacity: 0.5;
-    background: rgba(0, 0, 0, 0.2);
-}
 
 @media (max-height: 700px),
 (max-width: 600px) {
