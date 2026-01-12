@@ -120,6 +120,14 @@ canvas {
     .link-sub {
         display: none;
     }
+
+    .links-container {
+        background: transparent;
+        border: none;
+        box-shadow: none;
+        backdrop-filter: none;
+        -webkit-backdrop-filter: none;
+    }
 }
 
 .site-header {
