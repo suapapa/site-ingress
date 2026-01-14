@@ -253,8 +253,9 @@ app.appendChild(footer);
 const fetchLinks = async () => {
   try {
     let url = '/api/links';
-    if (window.location.pathname === '/support') {
-      url = '/api/links?prefix=support';
+    if (window.location.pathname !== '/') {
+      const prefix = window.location.pathname.substring(1);
+      url = `/api/links?prefix=${prefix}`;
     }
 
     const res = await fetch(url);
