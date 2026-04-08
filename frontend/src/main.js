@@ -241,7 +241,7 @@ centerContent.appendChild(fishContainer);
 // Footer
 const footer = document.createElement('div');
 footer.className = 'site-footer';
-footer.innerHTML = "&copy; Homin Lee &lt;homin.crc@gmail.com&gt; All rights reserved.<br>The Go gopher was designed by Renee French.";
+footer.innerHTML = "&copy; Homin Lee &lt;i@homin.dev&gt; All rights reserved.<br>The Go gopher was designed by Renee French.";
 app.appendChild(footer);
 
 
