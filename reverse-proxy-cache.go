@@ -3,6 +3,7 @@ package main
 import (
 	"net/http/httputil"
 	"net/url"
+	"sync"
 
 	"github.com/pkg/errors"
 )
@@ -13,14 +14,20 @@ type ReverseProxyCache struct {
 }
 
 var (
-	rpCache map[string]*ReverseProxyCache
+	rpMu    sync.RWMutex
+	rpCache = make(map[string]*ReverseProxyCache)
 )
 
-func init() {
-	rpCache = map[string]*ReverseProxyCache{}
-}
-
 func getReverseProxy(target string) (*ReverseProxyCache, error) {
+	rpMu.RLock()
+	rpc, ok := rpCache[target]
+	rpMu.RUnlock()
+	if ok {
+		return rpc, nil
+	}
+
+	rpMu.Lock()
+	defer rpMu.Unlock()
 	if rpc, ok := rpCache[target]; ok {
 		return rpc, nil
 	}
@@ -31,7 +38,7 @@ func getReverseProxy(target string) (*ReverseProxyCache, error) {
 	}
 
 	rp := httputil.NewSingleHostReverseProxy(targetURL)
-	rpc := &ReverseProxyCache{
+	rpc = &ReverseProxyCache{
 		ReverseProxy: rp,
 		URL:          targetURL,
 	}

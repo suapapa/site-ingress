@@ -1,6 +1,6 @@
 import './style.css'
 import * as THREE from 'three';
-import { OBJLoader } from 'three/examples/jsm/loaders/OBJLoader.js';
+import { STLLoader } from 'three/examples/jsm/loaders/STLLoader.js';
 
 // Setup
 const scene = new THREE.Scene();
@@ -108,14 +108,26 @@ const toonGradient = createGradientMap();
 const gophers = [];
 let gopherTemplate = null;
 
-const loader = new OBJLoader();
+const loader = new STLLoader();
 loader.load(
-  '/model/go_gopher_high.obj',
-  (object) => {
-    // 1. Center and Scale the model
-    const box = new THREE.Box3().setFromObject(object);
-    const size = box.getSize(new THREE.Vector3());
-    const center = box.getCenter(new THREE.Vector3());
+  '/model/go_gopher_low_0.02.stl',
+  (geometry) => {
+    geometry.computeVertexNormals();
+
+    const mesh = new THREE.Mesh(
+      geometry,
+      new THREE.MeshToonMaterial({
+        color: 0x00ADD8,
+        gradientMap: toonGradient,
+      })
+    );
+
+    geometry.computeBoundingBox();
+    const box = geometry.boundingBox;
+    const size = new THREE.Vector3();
+    const center = new THREE.Vector3();
+    box.getSize(size);
+    box.getCenter(center);
 
     let maxDim = Math.max(size.x, size.y, size.z);
 
@@ -126,25 +138,11 @@ loader.load(
     const targetSize = 1.5;
     const scale = targetSize / maxDim;
 
-    // Apply corrected centering
-    object.position.copy(center).multiplyScalar(-scale);
-    object.scale.set(scale, scale, scale);
+    mesh.position.copy(center).multiplyScalar(-scale);
+    mesh.scale.set(scale, scale, scale);
 
-    // Create container
     gopherTemplate = new THREE.Group();
-    gopherTemplate.add(object);
-
-    // Apply Material - TOON (Cel) Shading
-    object.traverse((child) => {
-      if (child.isMesh) {
-        child.geometry.computeVertexNormals();
-        child.material = new THREE.MeshToonMaterial({
-          color: 0x00ADD8,
-          gradientMap: toonGradient,
-        });
-        // Shadows disabled
-      }
-    });
+    gopherTemplate.add(mesh);
 
     // Spawn initial gophers
     for (let i = 0; i < 20; i++) {
@@ -153,7 +151,7 @@ loader.load(
   },
   (xhr) => { },
   (error) => {
-    console.error('Error loading OBJ:', error);
+    console.error('Error loading STL:', error);
   }
 );
 

@@ -46,6 +46,7 @@ func LoadSiteFromFile(path string) (*Site, error) {
 	if err != nil {
 		return nil, errors.Wrap(err, "fail to load site conf")
 	}
+	defer f.Close()
 
 	ret := &Site{}
 	err = yaml.NewDecoder(f).Decode(ret)

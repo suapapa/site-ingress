@@ -7,6 +7,7 @@ import (
 	"os"
 	"os/signal"
 	"path"
+	"sort"
 	"syscall"
 
 	"github.com/gin-gonic/gin"
@@ -31,7 +32,8 @@ var (
 	linksConf string
 	debug     bool
 
-	siteLinks ingress.Links
+	siteLinks      ingress.Links
+	redirectByPath map[string]string // tidyPath(link.Name) -> target URL (first match by sorted prefix)
 )
 
 func main() {
@@ -58,6 +60,7 @@ func main() {
 	}
 	siteLinks = site.Links
 	says = site.Says
+	redirectByPath = buildRedirectIndex(site.Links)
 
 	// Set Gin to production mode
 	gin.SetMode(gin.ReleaseMode)
@@ -79,8 +82,9 @@ func main() {
 		showHides := c.Query("show_hides") == "true"
 		prefix := tidyPath(c.Query("prefix"))
 
-		var resp []*ingress.Link
-		for _, l := range siteLinks[prefix] {
+		list := siteLinks[prefix]
+		resp := make([]*ingress.Link, 0, len(list))
+		for _, l := range list {
 			if !l.Hide || showHides {
 				resp = append(resp, l)
 			}
@@ -111,34 +115,20 @@ func main() {
 func redirectHandler(c *gin.Context) {
 	dest := tidyPath(c.Param("path"))
 
-	log.Infof("dest: %s", dest)
-
-	urlPath := c.Request.URL.Path
-	log.Infof("redirect handler: %s", urlPath)
-
-	// Search in root links
-	for prefix, links := range siteLinks {
-		for _, link := range links {
-			if link == nil {
-				continue
-			}
-
-			// Normalize link name
-			// itemName := link.Name
-			// if itemName != "" && itemName[0] == '/' {
-			// 	itemName = itemName[1:]
-			// }
-
-			// // Check match
-			if tidyPath(link.Name) == dest {
-				log.Printf("redirect %s -> %s", tidyPath(path.Join(prefix, dest)), link.Link)
-				c.Redirect(http.StatusTemporaryRedirect, link.Link)
-				return
-			}
-		}
+	if debug {
+		log.Infof("redirect handler: path=%s dest=%s", c.Request.URL.Path, dest)
 	}
 
-	c.AbortWithStatus(http.StatusNotFound)
+	target, ok := redirectByPath[dest]
+	if !ok {
+		c.AbortWithStatus(http.StatusNotFound)
+		return
+	}
+
+	if debug {
+		log.Infof("redirect %s -> %s", dest, target)
+	}
+	c.Redirect(http.StatusTemporaryRedirect, target)
 }
 
 func sitemapHandler(c *gin.Context) {
@@ -171,4 +161,33 @@ func tidyPath(p string) string {
 	}
 
 	return p
+}
+
+// buildRedirectIndex maps normalized link names to redirect targets. Prefix keys are sorted so
+// the first matching link order matches a stable YAML-like ordering (Go map iteration is not).
+func buildRedirectIndex(links ingress.Links) map[string]string {
+	n := 0
+	for _, ls := range links {
+		n += len(ls)
+	}
+	out := make(map[string]string, n)
+
+	prefixes := make([]string, 0, len(links))
+	for p := range links {
+		prefixes = append(prefixes, p)
+	}
+	sort.Strings(prefixes)
+
+	for _, prefix := range prefixes {
+		for _, link := range links[prefix] {
+			if link == nil {
+				continue
+			}
+			key := tidyPath(link.Name)
+			if _, exists := out[key]; !exists {
+				out[key] = link.Link
+			}
+		}
+	}
+	return out
 }

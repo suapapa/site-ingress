@@ -14,12 +14,10 @@ RUN npm ci
 # Copy frontend source code
 COPY frontend/ .
 
-# Handle the symlinked asset:
-# The source code checks in public/model as a symlink to ../../asset/go-gopher-model.
-# In the container, we need the actual files.
-# We remove the symlink and copy the actual assets from the build context.
-RUN rm public/model || true
-COPY asset/go-gopher-model public/model
+# Dev uses public/model/go_gopher_low_0.02.stl → ../../asset/...; image needs a real file.
+RUN rm -rf public/model
+RUN mkdir -p public/model
+COPY asset/go_gopher_low_0.02.stl public/model/
 
 # Build the app
 RUN npm run build

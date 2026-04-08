@@ -11,7 +11,7 @@ Transform the current Server-Side Rendered (SSR) Go application into a Client-Si
     -   Vite (Build tool)
     -   Three.js (WebGL Library)
 - **Features**:
-    -   Load 3D Gopher model from `../asset/go-gopher-model/go_gopher_high.obj`.
+    -   Load 3D Gopher model from `../asset/go_gopher_low_0.02.stl` using Three.js `STLLoader` (served at `/model/go_gopher_low_0.02.stl` via `frontend/public/model/go_gopher_low_0.02.stl` → `asset/go_gopher_low_0.02.stl`).
     -   Implement "Gophers following mouse" interaction.
     -   Fetch links from `/api/links`.
     -   Display links in a UI overlay (HTML/CSS).

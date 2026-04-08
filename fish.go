@@ -17,6 +17,8 @@ func init() {
 }
 
 func GetRandomSay() *ingress.Say {
-	i := r.Intn(len(says))
-	return says[i]
+	if len(says) == 0 {
+		return nil
+	}
+	return says[r.Intn(len(says))]
 }
