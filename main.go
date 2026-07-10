@@ -16,18 +16,10 @@ import (
 	"github.com/suapapa/site-ingress/internal/ingress"
 )
 
-const (
-	SSL_CERT_FILE = "/etc/letsencrypt/live/homin.dev/fullchain.pem"
-	SSL_KEY_FILE  = "/etc/letsencrypt/live/homin.dev/privkey.pem"
-
-	// otplEP = "simplest-collector.default.svc.cluster.local:4317"
-)
-
 var (
 	programName = "site-ingress"
 	programVer  = "dev"
 
-	urlPrefix string
 	httpPort  int
 	linksConf string
 	debug     bool
@@ -47,29 +39,18 @@ func main() {
 	flag.BoolVar(&debug, "d", false, "print debug logs")
 	flag.Parse()
 
-	var site *ingress.Site
-	var err error
-	if site, err = ingress.LoadSiteFromFile(linksConf); err != nil {
+	site, err := ingress.LoadSiteFromFile(linksConf)
+	if err != nil {
 		log.Fatalf("fail to read links conf: %v", err)
-		os.Exit(-1)
-	}
-
-	if site == nil {
-		log.Fatalf("fail to read links conf: %v", err)
-		os.Exit(-1)
 	}
 	siteLinks = site.Links
 	says = site.Says
 	redirectByPath = buildRedirectIndex(site.Links)
 
-	// Set Gin to production mode
 	gin.SetMode(gin.ReleaseMode)
 	router := gin.New()
+	router.Use(gin.Recovery())
 
-	// Add essential middleware for production
-	router.Use(gin.Recovery()) // Panic recovery middleware
-
-	// Configure trusted proxies for Kubernetes network ranges
 	router.SetTrustedProxies([]string{
 		"10.0.0.0/8",     // Kubernetes cluster network
 		"172.16.0.0/12",  // Kubernetes cluster network
@@ -77,7 +58,6 @@ func main() {
 		"127.0.0.1",      // Localhost
 	})
 
-	// API
 	router.GET("/api/links", func(c *gin.Context) {
 		showHides := c.Query("show_hides") == "true"
 		prefix := tidyPath(c.Query("prefix"))
@@ -95,11 +75,11 @@ func main() {
 	router.GET("/api/fish", func(c *gin.Context) {
 		c.JSON(http.StatusOK, GetRandomSay())
 	})
-	router.Static("/assets", "/assets")
+	router.StaticFile("/ads.txt", "asset/ads.txt")
+	router.StaticFile("/robots.txt", "asset/robots.txt")
 	router.GET("/sitemap.xml", sitemapHandler)
 	router.GET("/:path", redirectHandler)
 
-	// start HTTPServer
 	go func() {
 		log.Infof("listening http on :%d", httpPort)
 		if err := router.Run(fmt.Sprintf(":%d", httpPort)); err != nil {

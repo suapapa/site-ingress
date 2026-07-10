@@ -31,24 +31,6 @@ func initLogger() {
 		"program":  programName,
 		"ver":      programVer,
 	})
-
-	/*
-		// fluent hook
-		fluentHook, err := logrus_fluent.NewWithConfig(logrus_fluent.Config{
-			Host: "fluent",
-			Port: 24224,
-		})
-		if err != nil {
-			panic(err)
-		}
-		fluentHook.SetMessageField("message")
-		fluentHook.SetLevels([]logrus.Level{
-			logrus.PanicLevel, logrus.FatalLevel, logrus.ErrorLevel, logrus.WarnLevel,
-			logrus.InfoLevel,
-		})
-		fluentHook.SetTag("app." + programName)
-		logger.AddHook(fluentHook)
-	*/
 }
 
 // log formatter to print log in KST timezone

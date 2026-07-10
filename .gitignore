@@ -1,2 +1,4 @@
 .DS_Store
 *.bak
+.agents
+skills-lock.json

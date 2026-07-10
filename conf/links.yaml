@@ -50,26 +50,6 @@ links:
       desc: 🌠 스티커 판매
       hide: true
 
-    # - name: /gb
-    #   link: https://homin.dev/gb
-    #   reverse_proxy_link: http://gb.default.svc.cluster.local:8080
-    #   reverse_proxy: true
-    #   desc: 방명록
-
-    # - name: /mqtt
-    #   link: mosquitto.default.svc.cluster.local
-    #   port_foward: true
-    #   in_port: 9001
-    #   out_port: 9001
-    #   hide: true
-
-    # - name: /asset
-    #   link: https://homin.dev/asset
-    #   reverse_proxy_link: http://asset.default.svc.cluster.local:8080
-    #   reverse_proxy: true
-    #   hide: true
-
-
   "/support":
     - name: Github Sponsor
       link: https://github.com/sponsors/suapapa
