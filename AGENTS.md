@@ -17,8 +17,8 @@ Transform the current Server-Side Rendered (SSR) Go application into a Client-Si
     -   Display links in a UI overlay (HTML/CSS).
     -   Support `?show_gophers_only=true` to hide UI overlay.
 - **Aesthetics**:
-    -   Vibrant, modern design.
-    -   Glassmorphism for the link overlay.
+    -   Dark restrained chrome over the WebGL gopher scene (Go cyan accent).
+    -   Quiet typographic overlay (no glassmorphism); see `DESIGN.md`.
 
 ### 2. Backend Modifications (Go)
 - **API Endpoint**:
@@ -39,6 +39,7 @@ Transform the current Server-Side Rendered (SSR) Go application into a Client-Si
 5.  [x] Update `main.go` to expose the API and serve static files.
 6.  Verify the integration.
 7.  [x] Optimize animation speed for high refresh rate displays (Delta Time implementation).
+8.  [x] Impeccable audit remediation (a11y, perf, quieter UI, DESIGN.md).
 
 ## Usage
 - **Development**: Run `npm run dev` in `frontend/` for frontend dev. Run `go run .` for backend.
