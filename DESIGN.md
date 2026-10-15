@@ -1,6 +1,6 @@
 ---
 name: HOMIN-DEV Ingress
-description: Personal ingress with a WebGL Go-gopher playground and destination links
+description: Personal ingress — WebGL Go gophers with links to projects and portfolio sites
 colors:
   bg: "#1a1a1a"
   surface: "#242424"
