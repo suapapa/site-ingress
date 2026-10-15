@@ -259,6 +259,11 @@ let linksContainer;
 let fishContainer;
 let statusEl;
 
+// The backend prerenders this chrome into #app for crawlers that do not run JavaScript
+// (see render.go). Replace it with the live DOM instead of appending to it, or the page
+// would show every destination twice.
+app.replaceChildren();
+
 if (!showGophersOnly) {
   ({ linksContainer, fishContainer, statusEl } = buildChrome());
 } else {

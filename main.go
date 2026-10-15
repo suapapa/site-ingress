@@ -8,6 +8,7 @@ import (
 	"os"
 	"os/signal"
 	"path"
+	"path/filepath"
 	"sort"
 	"syscall"
 
@@ -23,6 +24,7 @@ var (
 
 	httpPort  int
 	linksConf string
+	staticDir string
 	siteURL   = "https://homin.dev" // absolute base for relative links in sitemap.xml
 	debug     bool
 
@@ -39,6 +41,7 @@ func main() {
 	flag.IntVar(&httpPort, "http", 8080, "set http port")
 	flag.StringVar(&linksConf, "c", "conf/links.yaml", "links")
 	flag.StringVar(&siteURL, "u", siteURL, "site URL used to absolutize relative links in sitemap.xml")
+	flag.StringVar(&staticDir, "static", "static", "directory holding the Vite-built index.html used as the prerender template")
 	flag.BoolVar(&debug, "d", false, "print debug logs")
 	flag.Parse()
 
@@ -49,6 +52,7 @@ func main() {
 	siteLinks = site.Links
 	says = site.Says
 	redirectByPath = buildRedirectIndex(site.Links)
+	loadPrerenderShell()
 
 	gin.SetMode(gin.ReleaseMode)
 	router := gin.New()
@@ -81,7 +85,8 @@ func main() {
 	router.StaticFile("/ads.txt", "asset/ads.txt")
 	router.StaticFile("/robots.txt", "asset/robots.txt")
 	router.GET("/sitemap.xml", sitemapHandler)
-	router.GET("/:path", redirectHandler)
+	router.GET("/", rootHandler)
+	router.GET("/:path", pathHandler)
 
 	go func() {
 		log.Infof("listening http on :%d", httpPort)
@@ -95,8 +100,44 @@ func main() {
 	<-c
 }
 
-func redirectHandler(c *gin.Context) {
+// loadPrerenderShell reads the Vite-built index.html and prerenders one document per
+// configured route. A missing shell is not fatal — nginx then keeps serving the plain
+// client-rendered shell, which is what happened before prerendering existed.
+func loadPrerenderShell() {
+	for _, p := range []string{
+		filepath.Join(staticDir, "index.html"),
+		filepath.Join("frontend", "dist", "index.html"), // local `go run .`
+	} {
+		b, err := os.ReadFile(p)
+		if err != nil {
+			continue
+		}
+		rendered, err := prerenderPages(b, siteLinks, siteURL)
+		if err != nil {
+			log.WithError(err).Warn("prerender failed: HTML routes fall back to the client-rendered shell")
+			return
+		}
+		prerenderShell = b
+		pages = rendered
+		log.WithField("static", p).Infof("prerendered %d SPA route(s)", len(pages))
+		return
+	}
+	log.WithField("static", staticDir).Warn("prerender shell not found: HTML routes fall back to nginx")
+}
+
+func rootHandler(c *gin.Context) {
+	servePrerendered(c, "/")
+}
+
+// pathHandler serves a prerendered SPA route when the path is a configured prefix, and
+// otherwise keeps the original short-link redirect behaviour.
+func pathHandler(c *gin.Context) {
 	dest := tidyPath(c.Param("path"))
+
+	if _, ok := pages[dest]; ok {
+		servePrerendered(c, dest)
+		return
+	}
 
 	if debug {
 		log.Infof("redirect handler: path=%s dest=%s", c.Request.URL.Path, dest)
@@ -112,6 +153,22 @@ func redirectHandler(c *gin.Context) {
 		log.Infof("redirect %s -> %s", dest, target)
 	}
 	c.Redirect(http.StatusTemporaryRedirect, target)
+}
+
+func servePrerendered(c *gin.Context, path string) {
+	// ?show_gophers_only=true asks for the WebGL scene without any chrome, so the bare
+	// shell (no injected links) is the right answer there.
+	if c.Query("show_gophers_only") == "true" && len(prerenderShell) > 0 {
+		c.Data(http.StatusOK, "text/html; charset=utf-8", prerenderShell)
+		return
+	}
+
+	page, ok := pages[path]
+	if !ok {
+		c.AbortWithStatus(http.StatusNotFound)
+		return
+	}
+	c.Data(http.StatusOK, "text/html; charset=utf-8", []byte(page))
 }
 
 func sitemapHandler(c *gin.Context) {
@@ -172,7 +229,9 @@ func tidyPath(p string) string {
 		p = "/" + p
 	}
 
-	if p[len(p)-1] == '/' {
+	// Guard len(p) > 1: stripping the trailing slash of "/" would turn the root path into
+	// the empty string, so "/" and "" would stop resolving to the same prefix.
+	if len(p) > 1 && p[len(p)-1] == '/' {
 		p = p[:len(p)-1]
 	}
 
