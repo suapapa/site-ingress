@@ -4,6 +4,7 @@ import (
 	"flag"
 	"fmt"
 	"net/http"
+	"net/url"
 	"os"
 	"os/signal"
 	"path"
@@ -22,6 +23,7 @@ var (
 
 	httpPort  int
 	linksConf string
+	siteURL   = "https://homin.dev" // absolute base for relative links in sitemap.xml
 	debug     bool
 
 	siteLinks      ingress.Links
@@ -36,6 +38,7 @@ func main() {
 
 	flag.IntVar(&httpPort, "http", 8080, "set http port")
 	flag.StringVar(&linksConf, "c", "conf/links.yaml", "links")
+	flag.StringVar(&siteURL, "u", siteURL, "site URL used to absolutize relative links in sitemap.xml")
 	flag.BoolVar(&debug, "d", false, "print debug logs")
 	flag.Parse()
 
@@ -114,17 +117,50 @@ func redirectHandler(c *gin.Context) {
 func sitemapHandler(c *gin.Context) {
 	sm := sitemap.New()
 
-	for prefix, ls := range siteLinks {
-		for _, link := range ls {
-			if link.SiteMap {
-				sm.Add(&sitemap.URL{Loc: path.Join(prefix, link.Link)})
+	for _, prefix := range sortedPrefixes(siteLinks) {
+		for _, link := range siteLinks[prefix] {
+			if link == nil || !link.SiteMap {
+				continue
 			}
+			loc, ok := sitemapLoc(prefix, link.Link)
+			if !ok {
+				log.WithField("link", link.Link).Warn("skip sitemap entry: not a crawlable URL")
+				continue
+			}
+			sm.Add(&sitemap.URL{Loc: loc})
 		}
 	}
 
 	c.Header("Content-Type", "application/xml; charset=utf-8")
 	c.Status(http.StatusOK)
 	sm.WriteTo(c.Writer)
+}
+
+// sitemapLoc resolves a links.yaml entry into the absolute <loc> value required by the
+// sitemap spec. Absolute links are emitted verbatim: running them through path.Join (as
+// this used to do) collapses the "//" after the scheme and strips the trailing slash,
+// turning https://homin.dev/resume/ into the invalid /https:/homin.dev/resume.
+// Relative links are resolved against siteURL plus the enclosing prefix.
+func sitemapLoc(prefix, link string) (string, bool) {
+	u, err := url.Parse(link)
+	if err != nil {
+		return "", false
+	}
+
+	if u.IsAbs() {
+		if u.Scheme != "http" && u.Scheme != "https" {
+			return "", false // mailto:, tel:, javascript: … have no place in a sitemap
+		}
+		return u.String(), true
+	}
+
+	base, err := url.Parse(siteURL)
+	if err != nil || base.Host == "" {
+		return "", false
+	}
+	base.Path = path.Join("/", prefix, u.Path)
+	base.RawQuery = u.RawQuery
+	return base.String(), true
 }
 
 func tidyPath(p string) string {
@@ -152,13 +188,7 @@ func buildRedirectIndex(links ingress.Links) map[string]string {
 	}
 	out := make(map[string]string, n)
 
-	prefixes := make([]string, 0, len(links))
-	for p := range links {
-		prefixes = append(prefixes, p)
-	}
-	sort.Strings(prefixes)
-
-	for _, prefix := range prefixes {
+	for _, prefix := range sortedPrefixes(links) {
 		for _, link := range links[prefix] {
 			if link == nil {
 				continue
@@ -170,4 +200,15 @@ func buildRedirectIndex(links ingress.Links) map[string]string {
 		}
 	}
 	return out
+}
+
+// sortedPrefixes returns the link prefixes in a deterministic order so that generated
+// output (redirect index, sitemap.xml) does not depend on Go's random map iteration.
+func sortedPrefixes(links ingress.Links) []string {
+	prefixes := make([]string, 0, len(links))
+	for p := range links {
+		prefixes = append(prefixes, p)
+	}
+	sort.Strings(prefixes)
+	return prefixes
 }
