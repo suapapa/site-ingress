@@ -21,6 +21,9 @@ func TestTidyPath(t *testing.T) {
 		{"/foo", "/foo"},
 		{"/foo/", "/foo"},
 		{"foo/", "/foo"},
+		// the root path must survive: stripping its trailing slash used to yield "".
+		{"/", "/"},
+		{"//", "/"},
 	}
 	for _, tt := range tests {
 		t.Run(tt.in, func(t *testing.T) {
