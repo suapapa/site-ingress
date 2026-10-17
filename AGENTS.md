@@ -43,8 +43,9 @@ Transform the current Server-Side Rendered (SSR) Go application into a Client-Si
 9.  [x] Convert 3D Gopher STL to indexed 16-bit quantized binary (`scripts/stl2qbin.py` → `asset/go_gopher_low_0.02.bin`) and remove `STLLoader`.
 
 ## Usage
-- **Development**: Run `npm run dev` in `frontend/` for frontend dev. Run `go run .` for backend.
-- **Production**: Build frontend (`npm run build`), then run Go server.
+- **Development**: `npm run dev` in `frontend/` for frontend dev, `go run .` for backend. (Or `make dev-fe` / `make dev-be`)
+- **Production / Build**: Run `make build` (builds frontend assets and backend binary).
+- **All Commands**: Run `make help` to inspect all available targets and variables.
 
 ## Documentation Maintenance
 - **Continuous Updates**: As the project evolves, strictly maintain `GEMINI.md` and `README.md` to reflect the current state, architectural decisions, and usage instructions.
@@ -112,8 +113,9 @@ google-chrome --headless=new --disable-gpu --enable-unsafe-swiftshader --no-sand
 
 ### 주의
 - 설정(`links.yaml`)을 바꾸면 **백엔드 재시작**이 필요합니다 (프리렌더·API 모두 기동 시 로드).
-- 배포는 `./push2vultr.sh -b -r` — **백엔드 이미지도 반드시 재빌드**해야 합니다
+- 배포는 `make deploy-be` (또는 `./push2vultr.sh -b -r`) — **백엔드 이미지도 반드시 재빌드**해야 합니다
   (프리렌더 템플릿이 백엔드 이미지에 들어갑니다). 프론트만 올리면 nginx 폴백만 동작합니다.
+  전체 배포는 `make deploy` (백엔드+프론트엔드 빌드/푸시 및 롤아웃 재시작)를 사용할 수 있습니다.
 - nginx 정규식에 없는 **새 prefix** 도 `@backend` 경유로 동작하지만 정적 폴백은 받지 못합니다.
   새 prefix 를 추가하면 `frontend/nginx.conf` 의 정규식도 갱신하세요.
 - `tidyPath("/")` 가 `""` 를 반환하던 버그를 이 작업에서 함께 수정했습니다 (루트 prefix 가 사라져 `/` 가 404 였음).
