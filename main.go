@@ -10,6 +10,7 @@ import (
 	"path"
 	"path/filepath"
 	"sort"
+	"strings"
 	"syscall"
 
 	"github.com/gin-gonic/gin"
@@ -52,6 +53,7 @@ func main() {
 	siteLinks = site.Links
 	says = site.Says
 	redirectByPath = buildRedirectIndex(site.Links)
+	llmsTxt, markdownPages = buildMarkdownPages(site.Links, siteURL)
 	loadPrerenderShell()
 
 	gin.SetMode(gin.ReleaseMode)
@@ -85,8 +87,15 @@ func main() {
 	router.StaticFile("/ads.txt", "asset/ads.txt")
 	router.StaticFile("/robots.txt", "asset/robots.txt")
 	router.GET("/sitemap.xml", sitemapHandler)
+	router.HEAD("/sitemap.xml", sitemapHandler)
+	router.GET(llmsTxtPath, llmsTxtHandler)
+	router.HEAD(llmsTxtPath, llmsTxtHandler)
+	router.GET(llmsFullTxtPath, llmsTxtHandler)
+	router.HEAD(llmsFullTxtPath, llmsTxtHandler)
 	router.GET("/", rootHandler)
+	router.HEAD("/", rootHandler)
 	router.GET("/:path", pathHandler)
+	router.HEAD("/:path", pathHandler)
 
 	go func() {
 		log.Infof("listening http on :%d", httpPort)
@@ -134,9 +143,34 @@ func rootHandler(c *gin.Context) {
 func pathHandler(c *gin.Context) {
 	dest := tidyPath(c.Param("path"))
 
+	if dest == llmsTxtPath || dest == llmsFullTxtPath {
+		llmsTxtHandler(c)
+		return
+	}
+
+	if strings.HasSuffix(dest, ".md") {
+		mdPath := strings.TrimSuffix(dest, ".md")
+		if mdPath == "/index" {
+			mdPath = "/"
+		}
+		if md, ok := markdownPages[mdPath]; ok {
+			c.Header("X-Content-Type-Options", "nosniff")
+			c.Data(http.StatusOK, markdownMime, []byte(md))
+			return
+		}
+	}
+
 	if _, ok := pages[dest]; ok {
 		servePrerendered(c, dest)
 		return
+	}
+	if wantsMarkdown(c) {
+		if md, ok := markdownPages[dest]; ok {
+			c.Header("Vary", "Accept")
+			c.Header("X-Content-Type-Options", "nosniff")
+			c.Data(http.StatusOK, markdownMime, []byte(md))
+			return
+		}
 	}
 
 	if debug {
@@ -156,11 +190,22 @@ func pathHandler(c *gin.Context) {
 }
 
 func servePrerendered(c *gin.Context, path string) {
+	c.Header("Vary", "Accept")
+	c.Header("Link", fmt.Sprintf("<%s>; rel=\"alternate\"; type=\"text/markdown\"", absURL(siteURL, llmsTxtPath)))
+
 	// ?show_gophers_only=true asks for the WebGL scene without any chrome, so the bare
 	// shell (no injected links) is the right answer there.
 	if c.Query("show_gophers_only") == "true" && len(prerenderShell) > 0 {
 		c.Data(http.StatusOK, "text/html; charset=utf-8", prerenderShell)
 		return
+	}
+
+	if wantsMarkdown(c) {
+		if md, ok := markdownPages[path]; ok {
+			c.Header("X-Content-Type-Options", "nosniff")
+			c.Data(http.StatusOK, markdownMime, []byte(md))
+			return
+		}
 	}
 
 	page, ok := pages[path]
@@ -199,6 +244,10 @@ func sitemapHandler(c *gin.Context) {
 // turning https://homin.dev/resume/ into the invalid /https:/homin.dev/resume.
 // Relative links are resolved against siteURL plus the enclosing prefix.
 func sitemapLoc(prefix, link string) (string, bool) {
+	return resolvePublicURL(siteURL, prefix, link)
+}
+
+func resolvePublicURL(site, prefix, link string) (string, bool) {
 	u, err := url.Parse(link)
 	if err != nil {
 		return "", false
@@ -211,7 +260,7 @@ func sitemapLoc(prefix, link string) (string, bool) {
 		return u.String(), true
 	}
 
-	base, err := url.Parse(siteURL)
+	base, err := url.Parse(site)
 	if err != nil || base.Host == "" {
 		return "", false
 	}

@@ -63,6 +63,10 @@ func TestPrerenderPages(t *testing.T) {
 		`class="site-footer"`,
 		`application/ld+json`,
 		`"@type":"WebSite"`,
+		`"@type":"ItemList"`,
+		`"sameAs":[`,
+		`rel="alternate" type="text/markdown" href="https://homin.dev/llms.txt"`,
+		`<span>📋 Resume</span> <span class="link-sub">/resume</span>`,
 	} {
 		if !strings.Contains(root, want) {
 			t.Errorf("root page missing %q", want)
@@ -70,6 +74,9 @@ func TestPrerenderPages(t *testing.T) {
 	}
 	if strings.Contains(root, "ShouldNotAppear") {
 		t.Errorf("hidden link leaked into the prerendered page")
+	}
+	if strings.Contains(root, `class="back-link"`) {
+		t.Errorf("root page should not render back-link")
 	}
 
 	social := pages["/social"]
@@ -80,6 +87,7 @@ func TestPrerenderPages(t *testing.T) {
 		"<title>HOMIN-DEV — Social</title>",
 		`<link rel="canonical" href="https://homin.dev/social"/>`,
 		`content="https://homin.dev/social"`,
+		`class="back-link"`,
 		"YouTube",
 	} {
 		if !strings.Contains(social, want) {
@@ -123,7 +131,11 @@ func TestPageDescription_truncates(t *testing.T) {
 // hatch, short links and 404s.
 func TestHTMLRoutes(t *testing.T) {
 	origPages, origShell, origRedirects := pages, prerenderShell, redirectByPath
-	t.Cleanup(func() { pages, prerenderShell, redirectByPath = origPages, origShell, origRedirects })
+	origLLMs, origMDPages := llmsTxt, markdownPages
+	t.Cleanup(func() {
+		pages, prerenderShell, redirectByPath = origPages, origShell, origRedirects
+		llmsTxt, markdownPages = origLLMs, origMDPages
+	})
 
 	rendered, err := prerenderPages([]byte(testShell), testLinks(), "https://homin.dev")
 	if err != nil {
@@ -136,6 +148,8 @@ func TestHTMLRoutes(t *testing.T) {
 
 	gin.SetMode(gin.TestMode)
 	r := gin.New()
+	r.GET(llmsTxtPath, llmsTxtHandler)
+	r.GET(llmsFullTxtPath, llmsTxtHandler)
 	r.GET("/", rootHandler)
 	r.GET("/:path", pathHandler)
 
@@ -175,6 +189,126 @@ func TestHTMLRoutes(t *testing.T) {
 	}
 	if got := w.Header().Get("Location"); got != "https://github.com/suapapa" {
 		t.Errorf("GET /gh Location = %q", got)
+	}
+}
+
+func TestLLMsTxtAndMarkdownNegotiation(t *testing.T) {
+	origPages, origShell := pages, prerenderShell
+	origLLMs, origMDPages := llmsTxt, markdownPages
+	t.Cleanup(func() {
+		pages, prerenderShell = origPages, origShell
+		llmsTxt, markdownPages = origLLMs, origMDPages
+	})
+
+	links := ingress.Links{
+		"/": {
+			{Name: "/resume", Link: "https://homin.dev/resume/", Desc: "📋 Resume"},
+			{Name: "/hidden", Link: "https://example.com/hidden", Desc: "ShouldNotAppear", Hide: true},
+		},
+		"/support": {
+			{Name: "Github Sponsor", Link: "https://github.com/sponsors/suapapa", Desc: "🐟🥮 붕어빵 지원"},
+		},
+	}
+
+	rendered, err := prerenderPages([]byte(testShell), links, "https://homin.dev")
+	if err != nil {
+		t.Fatalf("prerenderPages: %v", err)
+	}
+	pages, prerenderShell = rendered, []byte(testShell)
+
+	gin.SetMode(gin.TestMode)
+	r := gin.New()
+	r.GET(llmsTxtPath, llmsTxtHandler)
+	r.GET(llmsFullTxtPath, llmsTxtHandler)
+	r.GET("/", rootHandler)
+	r.GET("/:path", pathHandler)
+
+	// 1. /llms.txt and /llms-full.txt serve the full site index in Markdown.
+	for _, endpoint := range []string{"/llms.txt", "/llms-full.txt", "/index.md"} {
+		w := httptest.NewRecorder()
+		r.ServeHTTP(w, httptest.NewRequest(http.MethodGet, endpoint, nil))
+		if w.Code != http.StatusOK {
+			t.Fatalf("GET %s = %d, want 200", endpoint, w.Code)
+		}
+		if ct := w.Header().Get("Content-Type"); !strings.HasPrefix(ct, "text/markdown") {
+			t.Errorf("GET %s Content-Type = %q, want text/markdown", endpoint, ct)
+		}
+		body := w.Body.String()
+		for _, want := range []string{
+			"# HOMIN-DEV",
+			"## Main (`/`)",
+			"- [📋 Resume](https://homin.dev/resume/): Short link `/resume`",
+			"## Support (`/support`)",
+			"- [Github Sponsor](https://github.com/sponsors/suapapa): 🐟🥮 붕어빵 지원",
+			"## Machine-Readable Endpoints",
+		} {
+			if !strings.Contains(body, want) {
+				t.Errorf("GET %s missing %q\n%s", endpoint, want, body)
+			}
+		}
+		if strings.Contains(body, "ShouldNotAppear") {
+			t.Errorf("GET %s leaked hidden link:\n%s", endpoint, body)
+		}
+	}
+
+	// 2. Accept: text/markdown on "/" returns the full site markdown.
+	req := httptest.NewRequest(http.MethodGet, "/", nil)
+	req.Header.Set("Accept", "text/markdown, text/html;q=0.8")
+	w := httptest.NewRecorder()
+	r.ServeHTTP(w, req)
+	if w.Code != http.StatusOK {
+		t.Fatalf("GET / (Accept: text/markdown) = %d, want 200", w.Code)
+	}
+	if ct := w.Header().Get("Content-Type"); !strings.HasPrefix(ct, "text/markdown") {
+		t.Errorf("GET / (Accept: text/markdown) Content-Type = %q", ct)
+	}
+	if !strings.Contains(w.Body.String(), "## Support (`/support`)") {
+		t.Errorf("GET / (Accept: text/markdown) should include all sections:\n%s", w.Body.String())
+	}
+
+	// 3. Sub-route via Accept: text/markdown or .md suffix returns route-specific markdown.
+	for _, subReq := range []*http.Request{
+		func() *http.Request {
+			r := httptest.NewRequest(http.MethodGet, "/support", nil)
+			r.Header.Set("Accept", "text/markdown")
+			return r
+		}(),
+		httptest.NewRequest(http.MethodGet, "/support.md", nil),
+		httptest.NewRequest(http.MethodGet, "/support?format=md", nil),
+	} {
+		w := httptest.NewRecorder()
+		r.ServeHTTP(w, subReq)
+		if w.Code != http.StatusOK {
+			t.Fatalf("GET %s = %d, want 200", subReq.URL.String(), w.Code)
+		}
+		if ct := w.Header().Get("Content-Type"); !strings.HasPrefix(ct, "text/markdown") {
+			t.Errorf("GET %s Content-Type = %q", subReq.URL.String(), ct)
+		}
+		body := w.Body.String()
+		for _, want := range []string{
+			"# HOMIN-DEV — Support",
+			"- [Github Sponsor](https://github.com/sponsors/suapapa): 🐟🥮 붕어빵 지원",
+			"https://homin.dev/llms.txt",
+		} {
+			if !strings.Contains(body, want) {
+				t.Errorf("GET %s missing %q\n%s", subReq.URL.String(), want, body)
+			}
+		}
+	}
+
+	// 4. Browser Accept header (preferring text/html) still receives HTML + Link header.
+	htmlReq := httptest.NewRequest(http.MethodGet, "/", nil)
+	htmlReq.Header.Set("Accept", "text/html,application/xhtml+xml,text/markdown;q=0.5,*/*;q=0.8")
+	w = httptest.NewRecorder()
+	r.ServeHTTP(w, htmlReq)
+	if ct := w.Header().Get("Content-Type"); !strings.HasPrefix(ct, "text/html") {
+		t.Errorf("browser Accept got Content-Type = %q, want text/html", ct)
+	}
+	if linkHdr := w.Header().Get("Link"); !strings.Contains(linkHdr, `rel="alternate"`) || !strings.Contains(linkHdr, "/llms.txt") {
+		t.Errorf("HTML response Link header = %q, want alternate /llms.txt", linkHdr)
+	}
+	if varyHdr := w.Header().Get("Vary"); varyHdr != "Accept" {
+		t.Errorf("HTML response Vary header = %q, want Accept", varyHdr)
 	}
 }
 

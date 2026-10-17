@@ -11,7 +11,7 @@ Transform the current Server-Side Rendered (SSR) Go application into a Client-Si
     -   Vite (Build tool)
     -   Three.js (WebGL Library)
 - **Features**:
-    -   Load 3D Gopher model from `../asset/go_gopher_low_0.02.stl` using Three.js `STLLoader` (served at `/model/go_gopher_low_0.02.stl` via `frontend/public/model/go_gopher_low_0.02.stl` → `asset/go_gopher_low_0.02.stl`).
+    -   Load 3D Gopher model from `../asset/go_gopher_low_0.02.bin` (indexed 16-bit quantized binary generated from `asset/go_gopher_low_0.02.stl` via `scripts/stl2qbin.py`, served at `/model/go_gopher_low_0.02.bin` via `frontend/public/model/go_gopher_low_0.02.bin` → `asset/go_gopher_low_0.02.bin`).
     -   Implement "Gophers following mouse" interaction.
     -   Fetch links from `/api/links`.
     -   Display links in a UI overlay (HTML/CSS).
@@ -40,6 +40,7 @@ Transform the current Server-Side Rendered (SSR) Go application into a Client-Si
 6.  Verify the integration.
 7.  [x] Optimize animation speed for high refresh rate displays (Delta Time implementation).
 8.  [x] Impeccable audit remediation (a11y, perf, quieter UI, DESIGN.md).
+9.  [x] Convert 3D Gopher STL to indexed 16-bit quantized binary (`scripts/stl2qbin.py` → `asset/go_gopher_low_0.02.bin`) and remove `STLLoader`.
 
 ## Usage
 - **Development**: Run `npm run dev` in `frontend/` for frontend dev. Run `go run .` for backend.
@@ -74,8 +75,9 @@ Transform the current Server-Side Rendered (SSR) Go application into a Client-Si
 ### 관련 파일
 | 파일 | 역할 |
 |---|---|
-| `render.go` | 프리렌더 본체 (`prerenderPages`, `setAppContent`, `addStructuredData`) |
-| `main.go` | `-static` 플래그, `loadPrerenderShell()`, `rootHandler`/`pathHandler`/`servePrerendered` |
+| `render.go` | 프리렌더 본체 (`prerenderPages`, `setAppContent`, `addStructuredData`, `setAlternateMarkdown`) |
+| `llms.go` | `/llms.txt`·라우트별 마크다운 생성 및 `Accept: text/markdown` 콘텐츠 협상 |
+| `main.go` | `-static` 플래그, `loadPrerenderShell()`, `rootHandler`/`pathHandler`/`servePrerendered`/`llmsTxtHandler` |
 | `frontend/nginx.conf` | SPA 라우트 → 백엔드 프록시 + `@shell` 폴백 |
 | `frontend/src/main.js` | 하이드레이션 시 `replaceChildren()` |
 | `Dockerfile` | `node` 스테이지에서 프론트를 빌드해 `dist/index.html` 만 백엔드 이미지에 `static/` 로 복사 |
@@ -85,7 +87,9 @@ Transform the current Server-Side Rendered (SSR) Go application into a Client-Si
 cd frontend && npm ci && npm run build && cd ..
 go run . -static frontend/dist -c <배포중인 ingress_links.yaml>
 curl -s localhost:8080/social | grep -E '<title>|link-card'
-go test ./...     # render_test.go: 라우트별 title/canonical, 이스케이프, ?show_gophers_only, 404/단축링크
+curl -s localhost:8080/llms.txt
+curl -s -H 'Accept: text/markdown' localhost:8080/
+go test ./...     # render_test.go: 라우트별 title/canonical, 이스케이프, ?show_gophers_only, llms.txt/markdown, 404/단축링크
 ```
 
 브라우저까지 확인하려면 (WebGL 이라 headless 에서는 swiftshader 필요):
@@ -95,6 +99,16 @@ google-chrome --headless=new --disable-gpu --enable-unsafe-swiftshader --no-sand
   http://localhost:8080/social
 # 카드 수가 curl 결과와 "같아야" 합니다 (2배면 replaceChildren 이 빠진 것)
 ```
+
+### LLM / AI 스크래퍼 대응 (`llms.go`, `render.go`)
+1. **`/llms.txt` 및 `/llms-full.txt`**: [llmstxt.org](https://llmstxt.org/) 표준에 맞춰 모든 프리픽스(`/`, `/social`, `/archive`, `/support` 등)의 공개(`hide: false`) 링크, 단축 링크(`/gh` 등), JSON API 엔드포인트를 단일 마크다운 문서로 제공합니다.
+2. **콘텐츠 협상 (`Accept: text/markdown` / `?format=md` / `*.md`)**:
+   - `GET /` 에 `Accept: text/markdown` 요청 시 전체 사이트 인덱스를 마크다운으로 반환합니다.
+   - `GET /social` (또는 `/social.md`, `/support.md`) 요청 시 해당 라우트의 마크다운과 `/llms.txt` 안내 링크를 반환합니다.
+3. **HTML 스크래퍼 친화적 마크업 및 메타데이터**:
+   - `<head>` 의 `<link rel="alternate" type="text/markdown" href="https://homin.dev/llms.txt">` 및 HTTP `Link` 응답 헤더로 마크다운 인덱스를 노출합니다.
+   - `.link-card` 내부 `<span>` 사이와 카드 사이에 공백/개행 텍스트 노드를 넣어 HTML-to-Text 추출기에서 라벨과 단축 링크가 붙어버리지 않게 합니다 (Flexbox 레이아웃에는 영향 없음).
+   - JSON-LD(`application/ld+json`)에 `Person.sameAs`(전체 공개 외부 링크)와 `mainEntity`(`ItemList`)를 함께 제공합니다.
 
 ### 주의
 - 설정(`links.yaml`)을 바꾸면 **백엔드 재시작**이 필요합니다 (프리렌더·API 모두 기동 시 로드).

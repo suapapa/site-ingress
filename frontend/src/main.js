@@ -21,8 +21,9 @@ import {
   NearestFilter,
   MeshToonMaterial,
   Clock,
+  BufferGeometry,
+  Float32BufferAttribute,
 } from 'three';
-import { STLLoader } from 'three/examples/jsm/loaders/STLLoader.js';
 
 const SCENE_BG = 0x1a1a1a;
 const MAX_PIXEL_RATIO = 2;
@@ -119,10 +120,51 @@ const toonGradient = createGradientMap();
 const gophers = [];
 let gopherTemplate = null;
 
-const loader = new STLLoader();
-loader.load(
-  '/model/go_gopher_low_0.02.stl',
-  (geometry) => {
+async function loadQuantizedBin(url) {
+  const res = await fetch(url);
+  if (!res.ok) throw new Error(`HTTP ${res.status} loading ${url}`);
+  const buf = await res.arrayBuffer();
+  const view = new DataView(buf);
+
+  const magic = String.fromCharCode(
+    view.getUint8(0),
+    view.getUint8(1),
+    view.getUint8(2),
+    view.getUint8(3)
+  );
+  if (magic !== 'GQ16') {
+    throw new Error(`Invalid model magic: ${magic}`);
+  }
+
+  const vertexCount = view.getUint16(4, true);
+  const triCount = view.getUint16(6, true);
+  const minX = view.getFloat32(8, true);
+  const minY = view.getFloat32(12, true);
+  const minZ = view.getFloat32(16, true);
+  const scaleX = view.getFloat32(20, true) / 65535;
+  const scaleY = view.getFloat32(24, true) / 65535;
+  const scaleZ = view.getFloat32(28, true) / 65535;
+
+  const headerBytes = 32;
+  const qVerts = new Uint16Array(buf, headerBytes, vertexCount * 3);
+  const indices = new Uint16Array(buf, headerBytes + vertexCount * 6, triCount * 3);
+
+  const positions = new Float32Array(triCount * 9);
+  for (let i = 0; i < triCount * 3; i++) {
+    const vi = indices[i] * 3;
+    const pi = i * 3;
+    positions[pi] = minX + qVerts[vi] * scaleX;
+    positions[pi + 1] = minY + qVerts[vi + 1] * scaleY;
+    positions[pi + 2] = minZ + qVerts[vi + 2] * scaleZ;
+  }
+
+  const geometry = new BufferGeometry();
+  geometry.setAttribute('position', new Float32BufferAttribute(positions, 3));
+  return geometry;
+}
+
+loadQuantizedBin('/model/go_gopher_low_0.02.bin')
+  .then((geometry) => {
     geometry.computeVertexNormals();
 
     const mesh = new Mesh(
@@ -155,12 +197,10 @@ loader.load(
     for (let i = 0; i < GOPHER_COUNT; i++) {
       spawnGopher();
     }
-  },
-  undefined,
-  (error) => {
-    console.error('Error loading STL:', error);
-  }
-);
+  })
+  .catch((error) => {
+    console.error('Error loading model:', error);
+  });
 
 function spawnGopher() {
   if (!gopherTemplate) return;
@@ -220,6 +260,8 @@ sceneDescription.textContent =
   'Interactive 3D scene: colorful Go gophers follow the pointer across a dark grid. Links and site chrome appear above the scene.';
 document.body.insertBefore(sceneDescription, app);
 
+const isSubPath = window.location.pathname !== '/' && window.location.pathname !== '';
+
 function buildChrome() {
   const header = document.createElement('a');
   header.className = 'site-header';
@@ -231,6 +273,23 @@ function buildChrome() {
   main.className = 'center-content';
   main.setAttribute('aria-label', 'Site links');
   app.appendChild(main);
+
+  if (isSubPath) {
+    const backLink = document.createElement('a');
+    backLink.className = 'back-link';
+    backLink.href = '/';
+
+    const arrow = document.createElement('span');
+    arrow.className = 'back-arrow';
+    arrow.setAttribute('aria-hidden', 'true');
+    arrow.textContent = '←';
+
+    const label = document.createElement('span');
+    label.textContent = 'Home';
+
+    backLink.append(arrow, ' ', label);
+    main.appendChild(backLink);
+  }
 
   const linksContainer = document.createElement('nav');
   linksContainer.className = 'links-container';

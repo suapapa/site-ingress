@@ -69,6 +69,13 @@ components:
   link-card-hover:
     backgroundColor: "{colors.link-hover}"
     textColor: "{colors.ink}"
+  back-link:
+    backgroundColor: "{colors.surface}"
+    textColor: "{colors.ink-muted}"
+    typography: "label"
+    rounded: "{rounded.sm}"
+    padding: "8px 16px"
+    height: "40px"
   fish-quote:
     backgroundColor: "{colors.bg}"
     textColor: "{colors.ink}"
@@ -102,6 +109,7 @@ Flat tonal layering only. No drop shadows on chrome. Depth comes from the WebGL 
 ## Components
 
 - **site-header**: text link wordmark, centered, no pill/glass shell; hover shifts to accent.
+- **back-link**: compact bordered button (`← Home`) rendered above `.links-container` on non-root paths (`/social`, `/support`, etc.) for explicit return to `/`; cyan arrow (`--color-accent`), hover/active tint matching `.link-card`.
 - **link-card**: bordered destination control, min height 44px; hover/active tint with accent, `cursor: pointer`, no lift/shadow.
 - **fish-quote**: optional blockquote, max ~42ch, single border (not a side stripe).
 - **footer**: caption ink-faint, centered, always present (including gophers-only mode); respect `safe-area-inset-bottom`.

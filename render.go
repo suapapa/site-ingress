@@ -41,6 +41,8 @@ func prerenderPages(shell []byte, links ingress.Links, site string) (map[string]
 		return nil, fmt.Errorf("parse shell: %w", err)
 	}
 
+	llmsTxt, markdownPages = buildMarkdownPages(links, site)
+
 	out := make(map[string]string, len(links)+1)
 	for _, prefix := range sortedPrefixes(links) {
 		path := tidyPath(prefix)
@@ -60,8 +62,9 @@ func prerenderPages(shell []byte, links ingress.Links, site string) (map[string]
 		}
 		setMetaContent(doc, "property", "og:url", absURL(site, path))
 		setCanonical(doc, absURL(site, path))
-		addStructuredData(doc, site)
-		if err := setAppContent(doc, links[prefix]); err != nil {
+		setAlternateMarkdown(doc, absURL(site, llmsTxtPath))
+		addStructuredData(doc, site, prefix, links[prefix], links)
+		if err := setAppContent(doc, path, links[prefix]); err != nil {
 			return nil, err
 		}
 
@@ -130,8 +133,9 @@ func absURL(site, path string) string {
 }
 
 // setAppContent replaces #app's children with the markup main.js builds at runtime, so
-// the no-JS view is the real navigation, not an empty div.
-func setAppContent(doc *html.Node, links []*ingress.Link) error {
+// the no-JS view is the real navigation, not an empty div. Whitespace nodes between flex
+// items do not affect CSS layout but keep HTML-to-text scrapers from concatenating words.
+func setAppContent(doc *html.Node, path string, links []*ingress.Link) error {
 	app := findNode(doc, func(n *html.Node) bool {
 		return n.Type == html.ElementNode && n.Data == "div" && attrOf(n, "id") == "app"
 	})
@@ -144,10 +148,40 @@ func setAppContent(doc *html.Node, links []*ingress.Link) error {
 		Attr: []html.Attribute{{Key: "class", Val: "site-header"}, {Key: "href", Val: "/"}}}
 	header.AppendChild(text(siteName))
 	app.AppendChild(header)
+	app.AppendChild(text("\n"))
 
 	main := &html.Node{Type: html.ElementNode, Data: "main",
 		Attr: []html.Attribute{{Key: "class", Val: "center-content"}, {Key: "aria-label", Val: "Site links"}}}
 	app.AppendChild(main)
+	app.AppendChild(text("\n"))
+
+	if path != "/" {
+		back := &html.Node{
+			Type: html.ElementNode,
+			Data: "a",
+			Attr: []html.Attribute{
+				{Key: "class", Val: "back-link"},
+				{Key: "href", Val: "/"},
+			},
+		}
+		arrow := &html.Node{
+			Type: html.ElementNode,
+			Data: "span",
+			Attr: []html.Attribute{
+				{Key: "class", Val: "back-arrow"},
+				{Key: "aria-hidden", Val: "true"},
+			},
+		}
+		arrow.AppendChild(text("←"))
+		label := &html.Node{Type: html.ElementNode, Data: "span"}
+		label.AppendChild(text("Home"))
+
+		back.AppendChild(arrow)
+		back.AppendChild(text(" "))
+		back.AppendChild(label)
+		main.AppendChild(back)
+		main.AppendChild(text("\n"))
+	}
 
 	nav := &html.Node{Type: html.ElementNode, Data: "nav",
 		Attr: []html.Attribute{{Key: "class", Val: "links-container"}, {Key: "aria-label", Val: "Destinations"}}}
@@ -168,8 +202,10 @@ func setAppContent(doc *html.Node, links []*ingress.Link) error {
 		sub.AppendChild(text(l.Name))
 
 		card.AppendChild(label)
+		card.AppendChild(text(" "))
 		card.AppendChild(sub)
 		nav.AppendChild(card)
+		nav.AppendChild(text("\n"))
 	}
 
 	// Mirrors buildChrome() so the styled layout holds up without JavaScript.
@@ -190,23 +226,35 @@ func setAppContent(doc *html.Node, links []*ingress.Link) error {
 	return nil
 }
 
-func addStructuredData(doc *html.Node, site string) {
+func addStructuredData(doc *html.Node, site, prefix string, routeLinks []*ingress.Link, allLinks ingress.Links) {
 	head := findNode(doc, func(n *html.Node) bool { return n.Type == html.ElementNode && n.Data == "head" })
 	if head == nil {
 		return
 	}
+	author := map[string]any{
+		"@type": "Person",
+		"name":  "Homin Lee",
+		"url":   absURL(site, "/resume/"),
+	}
+	if sameAs := collectSameAs(site, allLinks); len(sameAs) > 0 {
+		author["sameAs"] = sameAs
+	}
+
 	ld := map[string]any{
 		"@context":   "https://schema.org",
 		"@type":      "WebSite",
 		"name":       siteName,
 		"url":        absURL(site, "/"),
 		"inLanguage": "en",
-		"author": map[string]any{
-			"@type": "Person",
-			"name":  "Homin Lee",
-			"url":   absURL(site, "/resume/"),
-		},
+		"author":     author,
 	}
+	if items := buildItemListElements(site, prefix, routeLinks); len(items) > 0 {
+		ld["mainEntity"] = map[string]any{
+			"@type":           "ItemList",
+			"itemListElement": items,
+		}
+	}
+
 	raw, err := json.Marshal(ld)
 	if err != nil {
 		return
@@ -215,6 +263,75 @@ func addStructuredData(doc *html.Node, site string) {
 		Attr: []html.Attribute{{Key: "type", Val: "application/ld+json"}}}
 	script.AppendChild(text(string(raw)))
 	head.AppendChild(script)
+}
+
+func collectSameAs(site string, allLinks ingress.Links) []string {
+	seen := map[string]bool{
+		absURL(site, "/"): true,
+	}
+	out := make([]string, 0)
+	for _, prefix := range orderedPrefixes(allLinks) {
+		for _, l := range allLinks[prefix] {
+			if l == nil || l.Hide {
+				continue
+			}
+			target, ok := resolvePublicURL(site, prefix, l.Link)
+			if !ok || seen[target] {
+				continue
+			}
+			seen[target] = true
+			out = append(out, target)
+		}
+	}
+	return out
+}
+
+func buildItemListElements(site, prefix string, links []*ingress.Link) []map[string]any {
+	items := make([]map[string]any, 0, len(links))
+	for _, l := range links {
+		if l == nil || l.Hide {
+			continue
+		}
+		target, ok := resolvePublicURL(site, prefix, l.Link)
+		if !ok {
+			continue
+		}
+		item := map[string]any{
+			"@type":    "ListItem",
+			"position": len(items) + 1,
+			"name":     cleanText(firstNonEmpty(l.Desc, l.Name, "Link")),
+			"url":      target,
+		}
+		items = append(items, item)
+	}
+	return items
+}
+
+func setAlternateMarkdown(doc *html.Node, url string) {
+	n := findNode(doc, func(n *html.Node) bool {
+		return n.Type == html.ElementNode &&
+			n.Data == "link" &&
+			attrOf(n, "rel") == "alternate" &&
+			attrOf(n, "type") == "text/markdown"
+	})
+	if n != nil {
+		setAttr(n, "href", url)
+		return
+	}
+	head := findNode(doc, func(n *html.Node) bool { return n.Type == html.ElementNode && n.Data == "head" })
+	if head == nil {
+		return
+	}
+	head.AppendChild(&html.Node{
+		Type: html.ElementNode,
+		Data: "link",
+		Attr: []html.Attribute{
+			{Key: "rel", Val: "alternate"},
+			{Key: "type", Val: "text/markdown"},
+			{Key: "href", Val: url},
+			{Key: "title", Val: "LLMs.txt"},
+		},
+	})
 }
 
 func setTitle(doc *html.Node, title string) {

@@ -14,10 +14,10 @@ RUN npm ci
 # Copy frontend source code
 COPY frontend/ .
 
-# Dev uses public/model/go_gopher_low_0.02.stl → ../../asset/...; image needs a real file.
+# Dev uses public/model/go_gopher_low_0.02.bin → ../../asset/...; image needs a real file.
 RUN rm -rf public/model
 RUN mkdir -p public/model
-COPY asset/go_gopher_low_0.02.stl public/model/
+COPY asset/go_gopher_low_0.02.bin public/model/
 
 # Build the app
 RUN npm run build
