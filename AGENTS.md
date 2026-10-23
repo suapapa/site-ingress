@@ -41,6 +41,7 @@ Transform the current Server-Side Rendered (SSR) Go application into a Client-Si
 7.  [x] Optimize animation speed for high refresh rate displays (Delta Time implementation).
 8.  [x] Impeccable audit remediation (a11y, perf, quieter UI, DESIGN.md).
 9.  [x] Convert 3D Gopher STL to indexed 16-bit quantized binary (`scripts/stl2qbin.py` → `asset/go_gopher_low_0.02.bin`) and remove `STLLoader`.
+10. [x] WebGL context loss recovery, viewport dimension guard, and seamless SSR hydration (fixes intermittent black screen issues).
 
 ## Usage
 - **Development**: `npm run dev` in `frontend/` for frontend dev, `go run .` for backend. (Or `make dev-fe` / `make dev-be`)
@@ -68,8 +69,8 @@ Transform the current Server-Side Rendered (SSR) Go application into a Client-Si
    - `hide: true` 링크 제외, HTML 이스케이프, 라우트별 `<title>`·description·canonical·`og:url`, JSON-LD(WebSite+Person).
    - 문구는 하드코딩하지 않고 **설정에서 파생**합니다 (`HOMIN-DEV — Social` / 링크 라벨 나열).
      `/` 의 title·description 은 `index.html` 의 손으로 쓴 값을 그대로 둡니다.
-3. `frontend/src/main.js` 는 하이드레이션 시 `app.replaceChildren()` 로 프리렌더 내용을 **교체**합니다
-   — `appendChild` 로 바뀌면 링크가 두 번 그려집니다.
+3. `frontend/src/main.js` 는 서버 프리렌더된 DOM이 이미 있으면 이를 재사용(하이드레이션)하고,
+   API 페치 완료 시 카드만 갱신하여 깜빡임/빈 화면을 방지합니다 (프리렌더가 없는 경우에만 `buildChrome()` 실행).
 4. nginx 는 해당 라우트만 백엔드로 프록시하고, **백엔드 장애 시 정적 shell 로 폴백**합니다
    (`error_page 404 500 502 503 504 = @shell`) → 페이지는 예전처럼 클라이언트 렌더링으로 동작합니다.
 

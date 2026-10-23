@@ -31,21 +31,65 @@ const GOPHER_COUNT = 20;
 
 const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
+function getViewportSize() {
+  const width = Math.max(window.innerWidth || 0, 1);
+  const height = Math.max(window.innerHeight || 0, 1);
+  return { width, height };
+}
+
+const { width: initialWidth, height: initialHeight } = getViewportSize();
+
 const scene = new Scene();
 scene.background = new Color(SCENE_BG);
 scene.fog = new Fog(SCENE_BG, 10, 50);
 
-const camera = new PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+const camera = new PerspectiveCamera(75, initialWidth / initialHeight, 0.1, 1000);
 camera.position.z = 10;
 camera.position.y = 8;
 camera.lookAt(0, 0, 0);
 
-const renderer = new WebGLRenderer({ antialias: !prefersReducedMotion, powerPreference: 'high-performance' });
-renderer.setSize(window.innerWidth, window.innerHeight);
-renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, MAX_PIXEL_RATIO));
-renderer.shadowMap.enabled = false;
-renderer.domElement.setAttribute('aria-hidden', 'true');
-document.body.appendChild(renderer.domElement);
+let renderer = null;
+let isWebGLAvailable = false;
+let isContextLost = false;
+
+try {
+  renderer = new WebGLRenderer({
+    antialias: !prefersReducedMotion,
+    powerPreference: 'high-performance',
+    failIfMajorPerformanceCaveat: false,
+  });
+  renderer.setSize(initialWidth, initialHeight);
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, MAX_PIXEL_RATIO));
+  renderer.shadowMap.enabled = false;
+  renderer.domElement.setAttribute('aria-hidden', 'true');
+  document.body.appendChild(renderer.domElement);
+  isWebGLAvailable = true;
+
+  renderer.domElement.addEventListener(
+    'webglcontextlost',
+    (event) => {
+      event.preventDefault();
+      isContextLost = true;
+      console.warn('WebGL context lost. Pausing rendering.');
+    },
+    false
+  );
+
+  renderer.domElement.addEventListener(
+    'webglcontextrestored',
+    () => {
+      isContextLost = false;
+      console.info('WebGL context restored. Resuming rendering.');
+      if (gridHelper && gridMaterial) {
+        gridMaterial.needsUpdate = true;
+      }
+    },
+    false
+  );
+} catch (error) {
+  console.warn('WebGL initialization failed, falling back to 2D UI mode:', error);
+  isWebGLAvailable = false;
+}
 
 const ambientLight = new AmbientLight(0xffffff, 0.6);
 scene.add(ambientLight);
@@ -163,44 +207,46 @@ async function loadQuantizedBin(url) {
   return geometry;
 }
 
-loadQuantizedBin('/model/go_gopher_low_0.02.bin')
-  .then((geometry) => {
-    geometry.computeVertexNormals();
+if (isWebGLAvailable) {
+  loadQuantizedBin('/model/go_gopher_low_0.02.bin')
+    .then((geometry) => {
+      geometry.computeVertexNormals();
 
-    const mesh = new Mesh(
-      geometry,
-      new MeshToonMaterial({
-        color: 0x00ADD8,
-        gradientMap: toonGradient,
-      })
-    );
+      const mesh = new Mesh(
+        geometry,
+        new MeshToonMaterial({
+          color: 0x00ADD8,
+          gradientMap: toonGradient,
+        })
+      );
 
-    geometry.computeBoundingBox();
-    const box = geometry.boundingBox;
-    const size = new Vector3();
-    const center = new Vector3();
-    box.getSize(size);
-    box.getCenter(center);
+      geometry.computeBoundingBox();
+      const box = geometry.boundingBox;
+      const size = new Vector3();
+      const center = new Vector3();
+      box.getSize(size);
+      box.getCenter(center);
 
-    let maxDim = Math.max(size.x, size.y, size.z);
-    if (maxDim < 0.001 || !isFinite(maxDim)) {
-      maxDim = 40;
-    }
+      let maxDim = Math.max(size.x, size.y, size.z);
+      if (maxDim < 0.001 || !isFinite(maxDim)) {
+        maxDim = 40;
+      }
 
-    const scale = 1.5 / maxDim;
-    mesh.position.copy(center).multiplyScalar(-scale);
-    mesh.scale.set(scale, scale, scale);
+      const scale = 1.5 / maxDim;
+      mesh.position.copy(center).multiplyScalar(-scale);
+      mesh.scale.set(scale, scale, scale);
 
-    gopherTemplate = new Group();
-    gopherTemplate.add(mesh);
+      gopherTemplate = new Group();
+      gopherTemplate.add(mesh);
 
-    for (let i = 0; i < GOPHER_COUNT; i++) {
-      spawnGopher();
-    }
-  })
-  .catch((error) => {
-    console.error('Error loading model:', error);
-  });
+      for (let i = 0; i < GOPHER_COUNT; i++) {
+        spawnGopher();
+      }
+    })
+    .catch((error) => {
+      console.warn('Could not load gopher model (will show grid only):', error);
+    });
+}
 
 function spawnGopher() {
   if (!gopherTemplate) return;
@@ -249,16 +295,18 @@ const explosionDiff = new Vector3();
 const kick = new Vector3();
 const offscreenCursor = new Vector3(1000, 1000, 1000);
 
-const app = document.querySelector('#app');
+const app = document.querySelector('#app') || document.body;
 const urlParams = new URLSearchParams(window.location.search);
 const showGophersOnly = urlParams.get('show_gophers_only') === 'true';
 
-const sceneDescription = document.createElement('p');
-sceneDescription.className = 'visually-hidden';
-sceneDescription.id = 'scene-desc';
-sceneDescription.textContent =
-  'Interactive 3D scene: colorful Go gophers follow the pointer across a dark grid. Links and site chrome appear above the scene.';
-document.body.insertBefore(sceneDescription, app);
+if (!document.getElementById('scene-desc')) {
+  const sceneDescription = document.createElement('p');
+  sceneDescription.className = 'visually-hidden';
+  sceneDescription.id = 'scene-desc';
+  sceneDescription.textContent =
+    'Interactive 3D scene: colorful Go gophers follow the pointer across a dark grid. Links and site chrome appear above the scene.';
+  document.body.insertBefore(sceneDescription, app);
+}
 
 const isSubPath = window.location.pathname !== '/' && window.location.pathname !== '';
 
@@ -314,23 +362,44 @@ function buildChrome() {
   return { linksContainer, fishContainer, statusEl: status };
 }
 
-let linksContainer;
-let fishContainer;
-let statusEl;
+let linksContainer = null;
+let fishContainer = null;
+let statusEl = null;
 
-// The backend prerenders this chrome into #app for crawlers that do not run JavaScript
-// (see render.go). Replace it with the live DOM instead of appending to it, or the page
-// would show every destination twice.
-app.replaceChildren();
-
-if (!showGophersOnly) {
-  ({ linksContainer, fishContainer, statusEl } = buildChrome());
-} else {
+if (showGophersOnly) {
+  app.replaceChildren();
   const footer = document.createElement('footer');
   footer.className = 'site-footer';
   footer.innerHTML =
     '&copy; Homin Lee &lt;i@homin.dev&gt; All rights reserved.<br>The Go gopher was designed by Renee French.';
   app.appendChild(footer);
+} else {
+  // Check if backend already prerendered the chrome into #app (see render.go).
+  // Re-use it directly so there is zero empty-screen flash while hydration and
+  // API fetch occur.
+  const existingLinks = app.querySelector('.links-container');
+  if (existingLinks) {
+    linksContainer = existingLinks;
+    fishContainer = app.querySelector('.fish-container');
+    statusEl = app.querySelector('.links-status');
+
+    const main = app.querySelector('.center-content') || app;
+    if (!fishContainer) {
+      fishContainer = document.createElement('blockquote');
+      fishContainer.className = 'fish-container';
+      main.appendChild(fishContainer);
+    }
+    if (!statusEl) {
+      statusEl = document.createElement('p');
+      statusEl.className = 'links-status';
+      statusEl.hidden = true;
+      main.appendChild(statusEl);
+    }
+  } else {
+    // Prerendered DOM not present (e.g. static shell fallback) -> build chrome
+    app.replaceChildren();
+    ({ linksContainer, fishContainer, statusEl } = buildChrome());
+  }
 }
 
 const mockLinks = [
@@ -340,8 +409,11 @@ const mockLinks = [
 ];
 
 async function fetchLinks() {
-  statusEl.hidden = false;
-  statusEl.textContent = 'Loading links…';
+  const hasExistingLinks = linksContainer && linksContainer.children.length > 0;
+  if (!hasExistingLinks && statusEl) {
+    statusEl.hidden = false;
+    statusEl.textContent = 'Loading links…';
+  }
 
   try {
     let url = '/api/links';
@@ -355,13 +427,21 @@ async function fetchLinks() {
     const data = await res.json();
     renderLinks(data);
   } catch (e) {
-    console.warn('Using mock data due to error:', e);
-    statusEl.textContent = 'Showing offline links (API unavailable).';
-    renderLinks(mockLinks);
+    console.warn('Fetch links failed:', e);
+    if (!hasExistingLinks) {
+      if (statusEl) {
+        statusEl.hidden = false;
+        statusEl.textContent = 'Showing offline links (API unavailable).';
+      }
+      renderLinks(mockLinks);
+    } else if (statusEl) {
+      statusEl.hidden = true;
+    }
   }
 }
 
 async function fetchFish() {
+  if (!fishContainer) return;
   try {
     const res = await fetch('/api/fish');
     if (!res.ok) return;
@@ -384,12 +464,15 @@ async function fetchFish() {
 }
 
 function renderLinks(links) {
+  if (!linksContainer) return;
   linksContainer.replaceChildren();
-  statusEl.hidden = true;
+  if (statusEl) statusEl.hidden = true;
 
   if (!Array.isArray(links) || links.length === 0) {
-    statusEl.hidden = false;
-    statusEl.textContent = 'No links available.';
+    if (statusEl) {
+      statusEl.hidden = false;
+      statusEl.textContent = 'No links available.';
+    }
     return;
   }
 
@@ -419,11 +502,13 @@ function updatePointerFromEvent(event) {
   const x = event.clientX ?? (event.touches && event.touches[0]?.clientX);
   const y = event.clientY ?? (event.touches && event.touches[0]?.clientY);
   if (x == null || y == null) return;
-  pointer.x = (x / window.innerWidth) * 2 - 1;
-  pointer.y = -(y / window.innerHeight) * 2 + 1;
+  const { width, height } = getViewportSize();
+  pointer.x = (x / width) * 2 - 1;
+  pointer.y = -(y / height) * 2 + 1;
 }
 
 function applyExplosion() {
+  if (!isWebGLAvailable || !groundPlane) return;
   raycaster.setFromCamera(pointer, camera);
   const intersects = raycaster.intersectObject(groundPlane);
   if (intersects.length === 0) return;
@@ -451,10 +536,19 @@ window.addEventListener('pointerdown', (event) => {
 });
 
 window.addEventListener('resize', () => {
-  camera.aspect = window.innerWidth / window.innerHeight;
+  const { width, height } = getViewportSize();
+  camera.aspect = width / height;
   camera.updateProjectionMatrix();
-  renderer.setSize(window.innerWidth, window.innerHeight);
-  renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, MAX_PIXEL_RATIO));
+  if (isWebGLAvailable && renderer) {
+    renderer.setSize(width, height);
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, MAX_PIXEL_RATIO));
+  }
+});
+
+window.addEventListener('pageshow', (event) => {
+  if (event.persisted) {
+    clock.start();
+  }
 });
 
 const clock = new Clock();
@@ -464,6 +558,10 @@ const repulsionStrength = 0.5;
 
 function animate() {
   requestAnimationFrame(animate);
+
+  if (!isWebGLAvailable || isContextLost || !renderer) {
+    return;
+  }
 
   const delta = clock.getDelta();
   const timeScale = prefersReducedMotion ? 0 : Math.min(delta * 60, 2);
@@ -537,4 +635,6 @@ function animate() {
   renderer.render(scene, camera);
 }
 
-animate();
+if (isWebGLAvailable) {
+  animate();
+}

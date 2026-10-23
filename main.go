@@ -191,6 +191,7 @@ func pathHandler(c *gin.Context) {
 
 func servePrerendered(c *gin.Context, path string) {
 	c.Header("Vary", "Accept")
+	c.Header("Cache-Control", "no-cache")
 	c.Header("Link", fmt.Sprintf("<%s>; rel=\"alternate\"; type=\"text/markdown\"", absURL(siteURL, llmsTxtPath)))
 
 	// ?show_gophers_only=true asks for the WebGL scene without any chrome, so the bare

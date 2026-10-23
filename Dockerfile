@@ -26,6 +26,8 @@ RUN npm ci
 COPY frontend/ .
 # Same as frontend/Dockerfile: public/model is a dev symlink to ../../asset/.
 RUN rm -rf public/model
+RUN mkdir -p public/model
+COPY asset/go_gopher_low_0.02.bin public/model/
 RUN npm run build
 
 #---
