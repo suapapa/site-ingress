@@ -108,10 +108,10 @@ restart: ## Restart k8s deployment and wait for rollout
 deploy: push restart ## Build, push all images, and restart deployment
 
 .PHONY: deploy-be
-deploy-be: push-be restart ## Build, push backend image, and restart deployment (equiv: push2vultr.sh -b -r)
+deploy-be: push-be restart ## Build, push backend image, and restart deployment
 
 .PHONY: deploy-fe
-deploy-fe: push-fe restart ## Build, push frontend image, and restart deployment (equiv: push2vultr.sh -f -r)
+deploy-fe: push-fe restart ## Build, push frontend image, and restart deployment
 
 .PHONY: status
 status: ## Check k8s deployment status and pods

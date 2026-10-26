@@ -114,7 +114,7 @@ google-chrome --headless=new --disable-gpu --enable-unsafe-swiftshader --no-sand
 
 ### 주의
 - 설정(`links.yaml`)을 바꾸면 **백엔드 재시작**이 필요합니다 (프리렌더·API 모두 기동 시 로드).
-- 배포는 `make deploy-be` (또는 `./push2vultr.sh -b -r`) — **백엔드 이미지도 반드시 재빌드**해야 합니다
+- 배포는 `make deploy-be` — **백엔드 이미지도 반드시 재빌드**해야 합니다
   (프리렌더 템플릿이 백엔드 이미지에 들어갑니다). 프론트만 올리면 nginx 폴백만 동작합니다.
   전체 배포는 `make deploy` (백엔드+프론트엔드 빌드/푸시 및 롤아웃 재시작)를 사용할 수 있습니다.
 - nginx 정규식에 없는 **새 prefix** 도 `@backend` 경유로 동작하지만 정적 폴백은 받지 못합니다.

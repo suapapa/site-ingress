@@ -29,7 +29,7 @@ Live > [HERE](https://homin.dev) <
   - `make model`: STL 모델을 최적화된 양자화 바이너리로 변환
 - **배포 (Vultr / K8s)**:
   - `make deploy`: 백엔드/프론트엔드 이미지 빌드 & 푸시 후 k8s 롤아웃 재시작
-  - `make deploy-be`: 백엔드 이미지 빌드 & 푸시 후 재시작 (구 `./push2vultr.sh -b -r`)
-  - `make deploy-fe`: 프론트엔드 이미지 빌드 & 푸시 후 재시작 (구 `./push2vultr.sh -f -r`)
+  - `make deploy-be`: 백엔드 이미지 빌드 & 푸시 후 재시작
+  - `make deploy-fe`: 프론트엔드 이미지 빌드 & 푸시 후 재시작
   - `make restart`: k8s 배포 롤아웃 재시작
   - `make status`: k8s 롤아웃 상태 및 파드 확인
