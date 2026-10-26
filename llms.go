@@ -29,7 +29,7 @@ var llmsTxt string
 // views from the configured links.
 func buildMarkdownPages(links ingress.Links, site string) (string, map[string]string) {
 	full := renderLLMsTxt(links, site)
-	byRoute := make(map[string]string, len(links)+1)
+	byRoute := make(map[string]string, len(links)+3)
 
 	for _, prefix := range orderedPrefixes(links) {
 		path := tidyPath(prefix)
@@ -37,10 +37,19 @@ func buildMarkdownPages(links ingress.Links, site string) (string, map[string]st
 			byRoute[path] = full
 			continue
 		}
-		byRoute[path] = renderRouteMarkdown(path, links[prefix], site)
+		routeLinks := effectiveRouteLinks(links, path, siteAbout)
+		byRoute[path] = renderRouteMarkdown(path, routeLinks, site)
 	}
 	if _, ok := byRoute["/"]; !ok {
 		byRoute["/"] = full
+	}
+	if !siteAbout.IsEmpty() {
+		if _, ok := byRoute[aboutPath]; !ok {
+			byRoute[aboutPath] = renderAboutMarkdown(siteAbout, site)
+		}
+	}
+	if _, ok := byRoute[wipPath]; !ok {
+		byRoute[wipPath] = renderWipMarkdown(site)
 	}
 
 	return full, byRoute
@@ -63,9 +72,37 @@ func renderLLMsTxt(links ingress.Links, site string) string {
 		strings.TrimSuffix(site, "/"),
 	)
 
+	if !siteAbout.IsEmpty() {
+		b.WriteString("\n## About (`")
+		b.WriteString(aboutPath)
+		b.WriteString("`)\n\n")
+		name := strings.TrimSpace(siteAbout.Name)
+		title := strings.TrimSpace(siteAbout.Title)
+		if name != "" && title != "" {
+			b.WriteString("**")
+			b.WriteString(name)
+			b.WriteString("** — ")
+			b.WriteString(title)
+			b.WriteString("\n\n")
+		} else if name != "" {
+			b.WriteString("**")
+			b.WriteString(name)
+			b.WriteString("**\n\n")
+		} else if title != "" {
+			b.WriteString("**")
+			b.WriteString(title)
+			b.WriteString("**\n\n")
+		}
+		if desc := strings.TrimSpace(siteAbout.Description); desc != "" {
+			b.WriteString(desc)
+			b.WriteByte('\n')
+		}
+	}
+
 	for _, prefix := range orderedPrefixes(links) {
 		path := tidyPath(prefix)
-		items := formatMarkdownLinks(prefix, links[prefix], site)
+		routeLinks := effectiveRouteLinks(links, path, siteAbout)
+		items := formatMarkdownLinks(prefix, routeLinks, site)
 		if len(items) == 0 {
 			continue
 		}
@@ -80,6 +117,61 @@ func renderLLMsTxt(links ingress.Links, site string) string {
 	}
 
 	writeMachineEndpoints(&b, site)
+	return b.String()
+}
+
+func renderAboutMarkdown(about ingress.About, site string) string {
+	var b strings.Builder
+
+	b.WriteString("# ")
+	b.WriteString(aboutPageTitle(about))
+	b.WriteString("\n\n")
+	name := strings.TrimSpace(about.Name)
+	title := strings.TrimSpace(about.Title)
+	if name != "" && title != "" {
+		fmt.Fprintf(&b, "> **%s** — %s\n\n", name, title)
+	} else if name != "" {
+		fmt.Fprintf(&b, "> **%s**\n\n", name)
+	} else if title != "" {
+		fmt.Fprintf(&b, "> %s\n\n", title)
+	}
+	fmt.Fprintf(&b, "Canonical URL: %s\n", absURL(site, aboutPath))
+	if hero := strings.TrimSpace(about.Hero); hero != "" {
+		fmt.Fprintf(&b, "Hero Image: %s\n", hero)
+	}
+	if desc := strings.TrimSpace(about.Description); desc != "" {
+		b.WriteString("\n")
+		b.WriteString(desc)
+		b.WriteByte('\n')
+	}
+	fmt.Fprintf(
+		&b,
+		"\n## Discovery\n\n- [Full Site Index (llms.txt)](%s): Complete Markdown list of all routes and destinations on %s.\n",
+		absURL(site, llmsTxtPath),
+		siteName,
+	)
+
+	return b.String()
+}
+
+func renderWipMarkdown(site string) string {
+	var b strings.Builder
+
+	b.WriteString("# ")
+	b.WriteString(wipPageTitle())
+	b.WriteString("\n\n> ")
+	b.WriteString(wipPageDescription())
+	b.WriteString("\n\n")
+	fmt.Fprintf(&b, "Canonical URL: %s\n", absURL(site, wipPath))
+	fmt.Fprintf(&b, "Image: %s\n\n", absURL(site, "/wip.webp"))
+	b.WriteString("현재 작업 중인 페이지입니다.\n")
+	fmt.Fprintf(
+		&b,
+		"\n## Discovery\n\n- [Full Site Index (llms.txt)](%s): Complete Markdown list of all routes and destinations on %s.\n",
+		absURL(site, llmsTxtPath),
+		siteName,
+	)
+
 	return b.String()
 }
 

@@ -19,6 +19,12 @@ import (
 	"github.com/suapapa/site-ingress/internal/ingress"
 )
 
+const (
+	aboutPath        = "/about"
+	aboutButtonLabel = "\U0001f471\U0001f3fb\u200d\u2642\ufe0f About"
+	wipPath          = "/wip"
+)
+
 var (
 	programName = "site-ingress"
 	programVer  = "dev"
@@ -29,6 +35,7 @@ var (
 	siteURL   = "https://homin.dev" // absolute base for relative links in sitemap.xml
 	debug     bool
 
+	siteAbout      ingress.About
 	siteLinks      ingress.Links
 	redirectByPath map[string]string // tidyPath(link.Name) -> target URL (first match by sorted prefix)
 )
@@ -50,6 +57,7 @@ func main() {
 	if err != nil {
 		log.Fatalf("fail to read links conf: %v", err)
 	}
+	siteAbout = site.About
 	siteLinks = site.Links
 	says = site.Says
 	redirectByPath = buildRedirectIndex(site.Links)
@@ -67,25 +75,14 @@ func main() {
 		"127.0.0.1",      // Localhost
 	})
 
-	router.GET("/api/links", func(c *gin.Context) {
-		showHides := c.Query("show_hides") == "true"
-		prefix := tidyPath(c.Query("prefix"))
-
-		list := siteLinks[prefix]
-		resp := make([]*ingress.Link, 0, len(list))
-		for _, l := range list {
-			if !l.Hide || showHides {
-				resp = append(resp, l)
-			}
-		}
-		c.JSON(http.StatusOK, resp)
-	})
-
+	router.GET("/api/links", linksHandler)
+	router.GET("/api/about", aboutHandler)
 	router.GET("/api/fish", func(c *gin.Context) {
 		c.JSON(http.StatusOK, GetRandomSay())
 	})
 	router.StaticFile("/ads.txt", "asset/ads.txt")
 	router.StaticFile("/robots.txt", "asset/robots.txt")
+	router.StaticFile("/wip.webp", "asset/wip.webp")
 	router.GET("/sitemap.xml", sitemapHandler)
 	router.HEAD("/sitemap.xml", sitemapHandler)
 	router.GET(llmsTxtPath, llmsTxtHandler)
@@ -132,6 +129,70 @@ func loadPrerenderShell() {
 		return
 	}
 	log.WithField("static", staticDir).Warn("prerender shell not found: HTML routes fall back to nginx")
+}
+
+func linksHandler(c *gin.Context) {
+	showHides := c.Query("show_hides") == "true"
+	prefix := tidyPath(c.Query("prefix"))
+
+	list := effectiveRouteLinks(siteLinks, prefix, siteAbout)
+	resp := make([]*ingress.Link, 0, len(list))
+	for _, l := range list {
+		if l == nil {
+			continue
+		}
+		if !l.Hide || showHides {
+			resp = append(resp, l)
+		}
+	}
+	c.JSON(http.StatusOK, resp)
+}
+
+func aboutHandler(c *gin.Context) {
+	if siteAbout.IsEmpty() {
+		c.Status(http.StatusNotFound)
+		return
+	}
+	c.JSON(http.StatusOK, siteAbout)
+}
+
+// effectiveRouteLinks returns the configured links for prefix, prepending the "👱🏻‍♂️ About"
+// button on the root route when About is configured.
+func effectiveRouteLinks(links ingress.Links, prefix string, about ingress.About) []*ingress.Link {
+	norm := tidyPath(prefix)
+	var list []*ingress.Link
+	if norm == "/" {
+		if l, ok := links["/"]; ok {
+			list = l
+		} else if l, ok := links[""]; ok {
+			list = l
+		}
+	} else {
+		if l, ok := links[norm]; ok {
+			list = l
+		} else if l, ok := links[strings.TrimPrefix(norm, "/")]; ok {
+			list = l
+		}
+	}
+
+	if norm != "/" || about.IsEmpty() {
+		return list
+	}
+
+	for _, l := range list {
+		if l != nil && (tidyPath(l.Name) == aboutPath || tidyPath(l.Link) == aboutPath) {
+			return list
+		}
+	}
+
+	out := make([]*ingress.Link, 0, len(list)+1)
+	out = append(out, &ingress.Link{
+		Name: aboutPath,
+		Link: aboutPath,
+		Desc: aboutButtonLabel,
+	})
+	out = append(out, list...)
+	return out
 }
 
 func rootHandler(c *gin.Context) {

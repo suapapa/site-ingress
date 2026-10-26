@@ -5,16 +5,18 @@ services:
       dockerfile: Dockerfile
     ports:
       - "8080:8080"
+      - "8081:80"
     environment:
       - GIN_MODE=release
+    volumes:
+      - ./conf/links.yaml:/app/conf/links.yaml:ro
     restart: always
 
   frontend:
     build:
       context: .
       dockerfile: frontend/Dockerfile
-    ports:
-      - "8081:80"
+    network_mode: "service:backend"
     restart: always
     depends_on:
       - backend

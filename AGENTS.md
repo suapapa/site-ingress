@@ -42,6 +42,8 @@ Transform the current Server-Side Rendered (SSR) Go application into a Client-Si
 8.  [x] Impeccable audit remediation (a11y, perf, quieter UI, DESIGN.md).
 9.  [x] Convert 3D Gopher STL to indexed 16-bit quantized binary (`scripts/stl2qbin.py` → `asset/go_gopher_low_0.02.bin`) and remove `STLLoader`.
 10. [x] WebGL context loss recovery, viewport dimension guard, and seamless SSR hydration (fixes intermittent black screen issues).
+11. [x] Implement `/about` modal popup (`Site.About` with circular hero avatar, name heading, title subtitle, and Markdown description) and prepend `"👱🏻‍♂️ About"` button on `/` when configured.
+12. [x] Implement `/wip` modal popup displaying `wip.webp` on top of root links, SSR pre-rendering with crawler metadata, and full SPA dismissal/history navigation.
 
 ## Usage
 - **Development**: `npm run dev` in `frontend/` for frontend dev, `go run .` for backend. (Or `make dev-fe` / `make dev-be`)
@@ -120,7 +122,5 @@ google-chrome --headless=new --disable-gpu --enable-unsafe-swiftshader --no-sand
 - nginx 정규식에 없는 **새 prefix** 도 `@backend` 경유로 동작하지만 정적 폴백은 받지 못합니다.
   새 prefix 를 추가하면 `frontend/nginx.conf` 의 정규식도 갱신하세요.
 - `tidyPath("/")` 가 `""` 를 반환하던 버그를 이 작업에서 함께 수정했습니다 (루트 prefix 가 사라져 `/` 가 404 였음).
-- `docker-compose.yml` 은 컨테이너가 분리돼 있어 nginx→`localhost:8080` 이 닿지 않습니다
-  (k8s 는 같은 팟 → 네트워크 네임스페이스 공유). 로컬에서 팟처럼 재현하려면
-  `docker run -d --name fe --network container:<backend-container> <frontend-image>` 를 쓰세요.
+- `docker-compose.yml` 은 `./conf/links.yaml` 을 백엔드 컨테이너(`/app/conf/links.yaml`)에 읽기 전용 볼륨으로 마운트하며, `frontend` 서비스가 `network_mode: service:backend` 로 백엔드의 네트워크 네임스페이스를 공유(k8s 파드와 동일)하여 nginx 프록시(`localhost:8080`)가 정상 동작합니다 (포트: `8080` 백엔드, `8081` 프론트엔드).
 

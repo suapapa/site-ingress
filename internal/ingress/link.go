@@ -2,14 +2,30 @@ package ingress
 
 import (
 	"os"
+	"strings"
 
 	"github.com/goccy/go-yaml"
 	"github.com/pkg/errors"
 )
 
 type Site struct {
+	About About  `yaml:"about,omitempty"`
 	Links Links  `yaml:"links"`
 	Says  []*Say `yaml:"says"`
+}
+
+type About struct {
+	Hero        string `yaml:"hero"`
+	Name        string `yaml:"name"`
+	Title       string `yaml:"title"`
+	Description string `yaml:"description"`
+}
+
+func (a About) IsEmpty() bool {
+	return strings.TrimSpace(a.Hero) == "" &&
+		strings.TrimSpace(a.Name) == "" &&
+		strings.TrimSpace(a.Title) == "" &&
+		strings.TrimSpace(a.Description) == ""
 }
 
 type Say struct {

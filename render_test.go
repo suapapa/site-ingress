@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -39,8 +40,8 @@ func TestPrerenderPages(t *testing.T) {
 	if err != nil {
 		t.Fatalf("prerenderPages: %v", err)
 	}
-	if len(pages) != 2 {
-		t.Fatalf("got %d pages, want 2 (%v)", len(pages), keysOf(pages))
+	if len(pages) != 3 {
+		t.Fatalf("got %d pages, want 3 (%v)", len(pages), keysOf(pages))
 	}
 
 	root, ok := pages["/"]
@@ -77,6 +78,29 @@ func TestPrerenderPages(t *testing.T) {
 	}
 	if strings.Contains(root, `class="back-link"`) {
 		t.Errorf("root page should not render back-link")
+	}
+	if !strings.Contains(root, `<div class="wip-overlay" id="wip-overlay" hidden="">`) {
+		t.Errorf("root page should contain hidden wip-overlay:\n%s", root)
+	}
+
+	wipPage, ok := pages["/wip"]
+	if !ok {
+		t.Fatalf(`no page for "/wip" (got %v)`, keysOf(pages))
+	}
+	for _, want := range []string{
+		"<title>HOMIN-DEV — Work In Progress</title>",
+		`<link rel="canonical" href="https://homin.dev/wip"/>`,
+		`content="https://homin.dev/wip"`,
+		`<div class="wip-overlay" id="wip-overlay">`,
+		`<img class="wip-img" src="/wip.webp"`,
+		`<p class="wip-caption">Work in Progress</p>`,
+	} {
+		if !strings.Contains(wipPage, want) {
+			t.Errorf("wip page missing %q\n%s", want, wipPage)
+		}
+	}
+	if strings.Contains(wipPage, `class="back-link"`) {
+		t.Errorf("wip page should not render back-link")
 	}
 
 	social := pages["/social"]
@@ -161,6 +185,7 @@ func TestHTMLRoutes(t *testing.T) {
 	}{
 		{"/", http.StatusOK, `class="link-card"`, ""},
 		{"/social", http.StatusOK, "YouTube", ""},
+		{"/wip", http.StatusOK, `<div class="wip-overlay" id="wip-overlay">`, ""},
 		// ?show_gophers_only=true must return the bare shell (no chrome).
 		{"/?show_gophers_only=true", http.StatusOK, `<div id="app"></div>`, "site-header"},
 		{"/nonsense", http.StatusNotFound, "", ""},
@@ -296,7 +321,26 @@ func TestLLMsTxtAndMarkdownNegotiation(t *testing.T) {
 		}
 	}
 
-	// 4. Browser Accept header (preferring text/html) still receives HTML + Link header.
+	// 4. /wip.md returns Work In Progress markdown with link to /wip.webp.
+	w = httptest.NewRecorder()
+	r.ServeHTTP(w, httptest.NewRequest(http.MethodGet, "/wip.md", nil))
+	if w.Code != http.StatusOK {
+		t.Fatalf("GET /wip.md = %d, want 200", w.Code)
+	}
+	if ct := w.Header().Get("Content-Type"); !strings.HasPrefix(ct, "text/markdown") {
+		t.Errorf("GET /wip.md Content-Type = %q", ct)
+	}
+	for _, want := range []string{
+		"# HOMIN-DEV — Work In Progress",
+		"Canonical URL: https://homin.dev/wip",
+		"Image: https://homin.dev/wip.webp",
+	} {
+		if !strings.Contains(w.Body.String(), want) {
+			t.Errorf("GET /wip.md missing %q:\n%s", want, w.Body.String())
+		}
+	}
+
+	// 5. Browser Accept header (preferring text/html) still receives HTML + Link header.
 	htmlReq := httptest.NewRequest(http.MethodGet, "/", nil)
 	htmlReq.Header.Set("Accept", "text/html,application/xhtml+xml,text/markdown;q=0.5,*/*;q=0.8")
 	w = httptest.NewRecorder()
@@ -309,6 +353,129 @@ func TestLLMsTxtAndMarkdownNegotiation(t *testing.T) {
 	}
 	if varyHdr := w.Header().Get("Vary"); varyHdr != "Accept" {
 		t.Errorf("HTML response Vary header = %q, want Accept", varyHdr)
+	}
+}
+
+func TestAboutPrerenderAndAPI(t *testing.T) {
+	origAbout, origLinks := siteAbout, siteLinks
+	origPages, origShell := pages, prerenderShell
+	origLLMs, origMDPages := llmsTxt, markdownPages
+	t.Cleanup(func() {
+		siteAbout, siteLinks = origAbout, origLinks
+		pages, prerenderShell = origPages, origShell
+		llmsTxt, markdownPages = origLLMs, origMDPages
+	})
+
+	siteLinks = testLinks()
+	siteAbout = ingress.About{
+		Hero:  "https://asset.homin.dev/image/profile.webp",
+		Name:  "Homin Lee",
+		Title: "Go & 3D Maker",
+		Description: "안녕하세요 **이호민**입니다.\n\n" +
+			"- [블로그](https://homin.dev/blog/)\n" +
+			"- `Go` & `Three.js`\n\n" +
+			"<script>alert(1)</script>",
+	}
+
+	rendered, err := prerenderPages([]byte(testShell), siteLinks, "https://homin.dev")
+	if err != nil {
+		t.Fatalf("prerenderPages: %v", err)
+	}
+	pages, prerenderShell = rendered, []byte(testShell)
+
+	// 1. Root page has "👱🏻‍♂️ About" as the first button before /resume, and hidden modal.
+	root := pages["/"]
+	aboutBtnIdx := strings.Index(root, `<span>`+aboutButtonLabel+`</span> <span class="link-sub">/about</span>`)
+	resumeBtnIdx := strings.Index(root, `<span>📋 Resume</span> <span class="link-sub">/resume</span>`)
+	if aboutBtnIdx < 0 {
+		t.Fatalf("root page missing About button:\n%s", root)
+	}
+	if resumeBtnIdx < 0 || aboutBtnIdx > resumeBtnIdx {
+		t.Errorf("About button (idx=%d) should appear before Resume button (idx=%d)", aboutBtnIdx, resumeBtnIdx)
+	}
+	if !strings.Contains(root, `<div class="about-overlay" id="about-overlay" hidden="">`) {
+		t.Errorf("root page should contain hidden about-overlay:\n%s", root)
+	}
+
+	// 2. /about page is prerendered with the modal open (no hidden attribute on #about-overlay).
+	aboutPage, ok := pages["/about"]
+	if !ok {
+		t.Fatalf("missing prerendered /about page (got %v)", keysOf(pages))
+	}
+	for _, want := range []string{
+		"<title>HOMIN-DEV — About</title>",
+		`<link rel="canonical" href="https://homin.dev/about"/>`,
+		`<div class="about-overlay" id="about-overlay">`,
+		`<img class="about-hero" src="https://asset.homin.dev/image/profile.webp" alt="Homin Lee"/>`,
+		`<h2 class="about-name" id="about-modal-title">Homin Lee</h2>`,
+		`<p class="about-title">Go &amp; 3D Maker</p>`,
+		`<strong>이호민</strong>`,
+		`<a href="https://homin.dev/blog/" target="_blank" rel="noopener noreferrer">블로그</a>`,
+		`<code>Go</code>`,
+		`&lt;script&gt;alert(1)&lt;/script&gt;`,
+	} {
+		if !strings.Contains(aboutPage, want) {
+			t.Errorf("/about page missing %q\n%s", want, aboutPage)
+		}
+	}
+	if strings.Contains(aboutPage, "<script>alert(1)</script>") {
+		t.Errorf("/about page did not escape raw script tag")
+	}
+
+	// 3. HTTP routes: GET /about, GET /api/about, GET /api/links, GET /about.md
+	gin.SetMode(gin.TestMode)
+	r := gin.New()
+	r.GET("/api/links", linksHandler)
+	r.GET("/api/about", aboutHandler)
+	r.GET(llmsTxtPath, llmsTxtHandler)
+	r.GET("/", rootHandler)
+	r.GET("/:path", pathHandler)
+
+	w := httptest.NewRecorder()
+	r.ServeHTTP(w, httptest.NewRequest(http.MethodGet, "/api/about", nil))
+	if w.Code != http.StatusOK {
+		t.Fatalf("GET /api/about = %d, want 200", w.Code)
+	}
+	var gotAbout ingress.About
+	if err := json.Unmarshal(w.Body.Bytes(), &gotAbout); err != nil {
+		t.Fatalf("unmarshal /api/about: %v", err)
+	}
+	if gotAbout.Hero != "https://asset.homin.dev/image/profile.webp" ||
+		gotAbout.Name != "Homin Lee" ||
+		gotAbout.Title != "Go & 3D Maker" {
+		t.Errorf("GET /api/about got %+v", gotAbout)
+	}
+
+	w = httptest.NewRecorder()
+	r.ServeHTTP(w, httptest.NewRequest(http.MethodGet, "/api/links", nil))
+	if w.Code != http.StatusOK {
+		t.Fatalf("GET /api/links = %d, want 200", w.Code)
+	}
+	if !strings.HasPrefix(w.Body.String(), `[{"Name":"/about","Link":"/about","Desc":"`+aboutButtonLabel+`"`) {
+		t.Errorf("GET /api/links should start with About button, got: %s", w.Body.String())
+	}
+
+	w = httptest.NewRecorder()
+	r.ServeHTTP(w, httptest.NewRequest(http.MethodGet, "/api/links?prefix=social", nil))
+	if strings.Contains(w.Body.String(), `"/about"`) {
+		t.Errorf("GET /api/links?prefix=social should not include About button: %s", w.Body.String())
+	}
+
+	w = httptest.NewRecorder()
+	r.ServeHTTP(w, httptest.NewRequest(http.MethodGet, "/about.md", nil))
+	if w.Code != http.StatusOK {
+		t.Fatalf("GET /about.md = %d, want 200", w.Code)
+	}
+	if !strings.Contains(w.Body.String(), "**Homin Lee** — Go & 3D Maker") {
+		t.Errorf("GET /about.md missing formatted title:\n%s", w.Body.String())
+	}
+
+	// 4. When siteAbout is empty, GET /api/about returns 404.
+	siteAbout = ingress.About{}
+	w = httptest.NewRecorder()
+	r.ServeHTTP(w, httptest.NewRequest(http.MethodGet, "/api/about", nil))
+	if w.Code != http.StatusNotFound {
+		t.Errorf("GET /api/about (empty) = %d, want 404", w.Code)
 	}
 }
 

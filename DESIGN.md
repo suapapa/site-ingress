@@ -111,6 +111,8 @@ Flat tonal layering only. No drop shadows on chrome. Depth comes from the WebGL 
 - **site-header**: text link wordmark, centered, no pill/glass shell; hover shifts to accent.
 - **back-link**: compact bordered button (`← Home`) rendered above `.links-container` on non-root paths (`/social`, `/support`, etc.) for explicit return to `/`; cyan arrow (`--color-accent`), hover/active tint matching `.link-card`.
 - **link-card**: bordered destination control, min height 44px; hover/active tint with accent, `cursor: pointer`, no lift/shadow.
+- **about-modal**: flat tonal dialog (`--color-surface` over `--color-shade`), circular hero image (`border-radius: 50%`, cyan border), prominent name heading with subtitle/title underneath, and Markdown description; opened via `"👱🏻‍♂️ About"` button on `/` or directly at `/about`.
+- **wip-modal**: dialog presenting WIP graphic (`wip.webp`) over `--color-shade`, centered title, and close control; opened via `/wip`.
 - **fish-quote**: optional blockquote, max ~42ch, single border (not a side stripe).
 - **footer**: caption ink-faint, centered, always present (including gophers-only mode); respect `safe-area-inset-bottom`.
 
