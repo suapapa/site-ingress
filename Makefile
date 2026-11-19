@@ -141,6 +141,10 @@ verify: ## Verify local running server endpoints (/social, /llms.txt, markdown)
 	@echo "\n--- Checking Markdown Content Negotiation ---"
 	@curl -s -H 'Accept: text/markdown' localhost:$(PORT)/ | head -n 10 || echo "Failed to fetch markdown"
 
+.PHONY: check-nginx
+check-nginx: ## Audit nginx versions (local images, remote ALPN) for the nginx2root CVEs
+	./scripts/check-nginx-cves.sh
+
 .PHONY: clean
 clean: ## Remove build artifacts
 	rm -f app
